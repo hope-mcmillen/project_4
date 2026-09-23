@@ -1,11 +1,11 @@
 {
-    "name": "project_4",
-    "short_name": "project_4",
+    "name": "Chameleon",
+    "short_name": "Chameleon",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#6250B5",
+    "theme_color": "#6250B5",
+    "description": "An offline social deduction party game.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
