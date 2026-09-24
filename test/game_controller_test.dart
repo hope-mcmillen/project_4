@@ -1,20 +1,10 @@
-import 'dart:math';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:project_4/features/game/data/topic_packs.dart';
 import 'package:project_4/features/game/logic/game_controller.dart';
+import 'package:project_4/features/game/models/game_phase.dart';
 import 'package:project_4/features/game/models/topic_pack.dart';
 
-// A deterministic source makes outcome tests independent of production randomness.
-class FixedRandom implements Random {
-  int _calls = 0;
-  @override
-  int nextInt(int max) => (_calls++ == 0 ? 0 : 1) % max;
-  @override
-  bool nextBool() => false;
-  @override
-  double nextDouble() => 0;
-}
+import 'support/fixed_random.dart';
 
 GameController createGame() => GameController(
   players: ['Alex', 'Blair', 'Casey', 'Drew'],

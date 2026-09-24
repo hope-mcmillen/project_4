@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../app/theme.dart';
 import '../data/topic_packs.dart';
+import '../logic/game_controller.dart';
+import '../logic/local_game_repository.dart';
 import '../models/topic_pack.dart';
 import '../widgets/game_widgets.dart';
 import 'game_screen.dart';
@@ -147,11 +149,14 @@ class _SetupScreenState extends State<SetupScreen> {
             onPressed: () {
               if (!_form.currentState!.validate()) return;
               FocusScope.of(context).unfocus();
+              final players = _names.map((name) => name.text.trim()).toList();
+              final topic = _topic;
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (_) => GameScreen(
-                    players: _names.map((name) => name.text.trim()).toList(),
-                    topic: _topic,
+                    createGame: () => LocalGameRepository(
+                      GameController(players: players, topic: topic),
+                    ),
                   ),
                 ),
               );

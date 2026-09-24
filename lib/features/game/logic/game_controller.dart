@@ -2,11 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 
+import '../models/game_phase.dart';
 import '../models/topic_pack.dart';
-
-enum GamePhase { reveal, clues, discussion, voting, guess, result }
-
-enum RoundWinner { group, chameleon }
 
 /// Owns one local round. Screens render state and invoke actions, never assign roles.
 /// This is in-memory pass-and-play; a future online mode needs server-owned secrets.

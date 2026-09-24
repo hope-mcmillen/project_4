@@ -52,17 +52,27 @@ lib/
     chameleon_app.dart              # Root application
     theme.dart                      # Shared colors and component styling
   features/game/
-    data/topic_packs.dart            # Original topic boards
-    models/topic_pack.dart          # Topic data shape
-    logic/game_controller.dart      # Round state, roles, votes, outcomes
+    data/topic_packs.dart           # Original topic boards
+    models/
+      topic_pack.dart               # Topic data shape
+      game_phase.dart               # GamePhase and RoundWinner enums
+      player_view.dart              # What one device may see (PlayerView, PlayerRole)
+    logic/
+      game_controller.dart          # Round state, roles, votes, outcomes
+      game_repository.dart          # GameRepository: the interface the UI uses
+      local_game_repository.dart    # Pass-and-play implementation over GameController
     screens/
       home_screen.dart              # Home and rules
       setup_screen.dart             # Player and topic setup
-      game_screen.dart              # Handoffs and round screens
-    widgets/game_widgets.dart       # Layout, cards, board, mascot
+      game_screen.dart              # Lifecycle, exit dialog, phase switch
+      phases/                       # One widget per phase (reveal, clues, discussion,
+                                    #   voting, guess, results) plus the handoff page
+    widgets/
+      game_widgets.dart             # Layout, cards, board, mascot
+      role_cards.dart               # ChameleonCard and InsiderCard
 ```
 
-The controller owns game transitions and exposes read-only state. Widgets call its actions and rebuild through `ListenableBuilder`. Production role selection uses `Random.secure`; tests inject deterministic randomness. No new third-party dependencies were added.
+The controller owns game transitions. Screens never touch it directly: they read a `PlayerView` from a `GameRepository` and call its actions, rebuilding through `ListenableBuilder`. `LocalGameRepository` adapts the controller for pass-and-play. Production role selection uses `Random.secure`; tests inject deterministic randomness. No new third-party dependencies were added.
 
 ## Checks
 
