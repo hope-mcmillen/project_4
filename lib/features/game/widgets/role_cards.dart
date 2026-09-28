@@ -18,9 +18,7 @@ class ChameleonCard extends StatelessWidget {
         colors: [Color(0xFF273B31), Color(0xFF141E19)],
       ),
       borderRadius: BorderRadius.circular(28),
-      border: Border.all(
-        color: AppColors.lime.withValues(alpha: 0.35),
-      ),
+      border: Border.all(color: AppColors.lime.withValues(alpha: 0.35)),
     ),
     child: Column(
       children: [
