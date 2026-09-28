@@ -24,13 +24,15 @@ class RevealPhase extends StatelessWidget {
     final chameleon = view.ownRole == PlayerRole.chameleon;
     return PageBody(
       children: [
-        Eyebrow('${view.turnPlayer} • Keep this secret'),
-        Text(
-          chameleon ? 'You’re the\nChameleon.' : 'You’re in\non the secret.',
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
+        if (!chameleon) ...[
+          Eyebrow('${view.turnPlayer} • Keep this secret'),
+          Text(
+            'You’re in\non the secret.',
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+        ],
         if (chameleon)
-          ChameleonCard(topicName: view.topic.name)
+          const ChameleonCard()
         else
           InsiderCard(topicName: view.topic.name, word: view.roleWord!),
         FilledButton.icon(
@@ -38,7 +40,6 @@ class RevealPhase extends StatelessWidget {
           icon: const Icon(Icons.lock_outline),
           label: const Text('Hide & continue'),
         ),
-        TopicBoard(topic: view.topic),
       ],
     );
   }
