@@ -5,6 +5,7 @@ import '../../game/data/topic_packs.dart';
 import '../../game/widgets/game_widgets.dart';
 import '../logic/host_lobby_controller.dart';
 import '../logic/room_repository.dart';
+import '../widgets/host_lobby_view.dart';
 
 /// The host's side of an online room. Owns the [HostLobbyController] for as
 /// long as the host stays here; leaving this screen ends the host session.
@@ -43,15 +44,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
       appBar: AppBar(title: const Text('Host a room')),
       body: switch (_host.phase) {
         HostLobbyPhase.setup || HostLobbyPhase.creating => _buildForm(context),
-        _ => PageBody(
-          children: [
-            const Eyebrow('Your room code'),
-            Text(
-              _host.room!.code,
-              style: Theme.of(context).textTheme.displaySmall,
-            ),
-          ],
-        ),
+        _ => HostLobbyView(host: _host),
       },
     ),
   );

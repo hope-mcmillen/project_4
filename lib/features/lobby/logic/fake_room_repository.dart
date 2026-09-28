@@ -25,7 +25,7 @@ class FakeRoomRepository implements RoomRepository {
     required String hostName,
     required String topicId,
   }) async {
-    await Future<void>.delayed(latency);
+    await _simulateLatency();
     final host = LobbyPlayer(id: _newPlayerId(), name: _validName(hostName));
     var code = generateRoomCode(_random);
     while (_rooms.containsKey(code)) {
@@ -66,7 +66,7 @@ class FakeRoomRepository implements RoomRepository {
     required String code,
     required String name,
   }) async {
-    await Future<void>.delayed(latency);
+    await _simulateLatency();
     final room = _room(code);
     if (room.status != RoomStatus.lobby) {
       throw const RoomException(RoomError.alreadyStarted);
@@ -88,7 +88,7 @@ class FakeRoomRepository implements RoomRepository {
     required String code,
     required String playerId,
   }) async {
-    await Future<void>.delayed(latency);
+    await _simulateLatency();
     final room = _room(code);
     if (playerId != room.hostId) throw const RoomException(RoomError.notHost);
     if (room.status != RoomStatus.lobby) {
@@ -114,6 +114,11 @@ class FakeRoomRepository implements RoomRepository {
   void _update(Room room) {
     _rooms[room.code] = room;
     _changes[room.code]!.add(room);
+  }
+
+  /// Skips the timer entirely at zero latency so widget tests need no pumps.
+  Future<void> _simulateLatency() async {
+    if (latency > Duration.zero) await Future<void>.delayed(latency);
   }
 
   String _newPlayerId() => 'p${_nextPlayerId++}';
