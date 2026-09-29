@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/theme.dart';
+import '../../lobby/logic/room_repository.dart';
+import '../../lobby/screens/create_room_screen.dart';
 import '../widgets/game_widgets.dart';
 import 'setup_screen.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, required this.rooms});
+
+  final RoomRepository rooms;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -70,6 +74,16 @@ class HomeScreen extends StatelessWidget {
           ).push(MaterialPageRoute<void>(builder: (_) => const SetupScreen())),
           icon: const Icon(Icons.arrow_forward_rounded),
           label: const Text('Start a game'),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => CreateRoomScreen(rooms: rooms),
+            ),
+          ),
+          icon: const Icon(Icons.wifi_tethering_rounded),
+          label: const Text('Host online'),
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(

@@ -22,6 +22,14 @@ Home → Setup → Role handoffs → Spoken clues → Discussion → Private vot
 
 When the app becomes inactive, hidden, paused, or detached, an open private view closes and a tentative ballot selection clears. Revealing it again requires another tap. This is a local privacy convenience, not screenshot protection or network security. Role text is not exposed by the controller's UI getters outside the appropriate reveal; the secret is public only after the round ends.
 
+## Online rooms (lobby)
+
+`features/lobby/` holds everything before an online round starts. `RoomRepository` is its only seam to a backend: create a room (the host is its first player), watch it as a stream, join by code, and start (host only, 3–8 players). Failures are `RoomException`s with a readable message. `Room` carries no secrets; roles and the word are dealt when the round starts (CHM-11).
+
+`FakeRoomRepository` is an in-memory stand-in until the backend is chosen (CHM-S1). `ChameleonApp` owns one instance for the whole app and passes it to `HomeScreen`, so hosting and joining on one device see the same rooms. Tests pass their own. A real backend implements the same interface; nothing above it changes.
+
+`CreateRoomScreen` owns a `HostLobbyController` (setup → creating → lobby → starting → started) for as long as the host stays on it, and switches to `HostLobbyView` once the room exists. Room codes are five characters from an alphabet without 0/O/1/I/L; `normalizeRoomCode` accepts lowercase, spaces and dashes for typed input.
+
 ## Extend without tangling features
 
 - **Content:** Add a `TopicPack` in `data/topic_packs.dart`; use distinct, nonempty words. Existing boards use 12 words for phone readability.
