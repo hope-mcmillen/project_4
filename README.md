@@ -30,6 +30,7 @@ The cloned project folder is `chameleon`. The Dart package is still named `proje
 - One spoken clue per player, group discussion, and private ballots.
 - Vote tally, the Chameleon's final guess, results, and replay with the same crew.
 - A running score while the same crew replays, shown on each result; it resets when you leave the round.
+- Optional game options on setup, folded by default with a one-line summary: a clue timer and a discussion timer (off, 30, 60 or 90 seconds; advisory, they never end a turn) and a round limit (unlimited, 3, 5 or 10) that ends the game with a final winner. Choices stay set when you return to setup.
 - An exit confirmation that preserves player setup when leaving a round.
 
 This is **offline pass-and-play on one device**. No accounts, room codes, network multiplayer, or saved games are implemented. An optional Supabase connection supplies topic content; rounds still run locally. Closing or restarting the app clears the round. Keep the phone private during reveals; this starter does not block screenshots or screen recording.
@@ -58,10 +59,12 @@ lib/
       topic_pack.dart               # Topic data shape
       game_phase.dart               # GamePhase and RoundWinner enums
       player_view.dart              # What one device may see (PlayerView, PlayerRole)
+      game_settings.dart            # Optional clue/discussion timers and round limit
     logic/
       game_controller.dart          # Round state, roles, votes, outcomes
       game_repository.dart          # GameRepository: the interface the UI uses
       local_game_repository.dart    # Pass-and-play implementation over GameController
+      game_session.dart             # Running score and round limit across replays
     screens/
       home_screen.dart              # Home and rules
       setup_screen.dart             # Player and topic setup
@@ -71,6 +74,7 @@ lib/
     widgets/
       game_widgets.dart             # Layout, cards, board, mascot
       role_cards.dart               # ChameleonCard and InsiderCard
+      phase_timer.dart              # Advisory countdown for clue and discussion phases
 ```
 
 The controller owns game transitions. Screens never touch it directly: they read a `PlayerView` from a `GameRepository` and call its actions, rebuilding through `ListenableBuilder`. `LocalGameRepository` adapts the controller for pass-and-play. Production role selection uses `Random.secure`; tests inject deterministic randomness. The HTTP package supports the optional Supabase topic catalog.

@@ -5,6 +5,7 @@ import '../data/local_word_repository.dart';
 import '../data/word_repository.dart';
 import '../logic/game_controller.dart';
 import '../logic/local_game_repository.dart';
+import '../models/game_settings.dart';
 import '../models/topic_pack.dart';
 import '../widgets/game_widgets.dart';
 import 'game_screen.dart';
@@ -31,6 +32,12 @@ class _SetupScreenState extends State<SetupScreen> {
   TopicPack? _topic;
   bool _loading = true;
   bool _loadFailed = false;
+
+  // Game options (Trello CHM-14). Setup state, like the names and topic, so
+  // they are still chosen when a game returns here. Null is off / unlimited.
+  Duration? _clueTime;
+  Duration? _discussionTime;
+  int? _roundLimit;
 
   @override
   void initState() {
@@ -249,6 +256,15 @@ class _SetupScreenState extends State<SetupScreen> {
                 ),
               ),
             ),
+          const SizedBox(height: 8),
+          _GameOptions(
+            clueTime: _clueTime,
+            discussionTime: _discussionTime,
+            roundLimit: _roundLimit,
+            onClueTime: (time) => setState(() => _clueTime = time),
+            onDiscussionTime: (time) => setState(() => _discussionTime = time),
+            onRoundLimit: (limit) => setState(() => _roundLimit = limit),
+          ),
           const SizedBox(height: 16),
           FilledButton.icon(
             onPressed: _loading || _loadFailed || _topic == null
@@ -260,9 +276,17 @@ class _SetupScreenState extends State<SetupScreen> {
                         .map((name) => name.text.trim())
                         .toList();
                     final topic = _topic!;
+                    // Fixed when the roles are dealt, like players and topic:
+                    // a game keeps the options it started with.
+                    final settings = GameSettings(
+                      clueTime: _clueTime,
+                      discussionTime: _discussionTime,
+                      roundLimit: _roundLimit,
+                    );
                     Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (_) => GameScreen(
+                          settings: settings,
                           createGame: () => LocalGameRepository(
                             GameController(players: players, topic: topic),
                           ),
@@ -280,6 +304,150 @@ class _SetupScreenState extends State<SetupScreen> {
           ),
         ],
       ),
+    ),
+  );
+}
+
+/// The host's optional timers and round limit (Trello CHM-14), folded away
+/// by default: most groups never change them, and setup already asks for
+/// names and a topic. The header's summary line shows what is set without
+/// opening it.
+///
+/// Stateless on purpose. The choices belong to the setup screen's state,
+/// which is what carries them through a game and back. The tile also drops
+/// its children while folded, so a choice held down here would be lost on
+/// every fold.
+class _GameOptions extends StatelessWidget {
+  const _GameOptions({
+    required this.clueTime,
+    required this.discussionTime,
+    required this.roundLimit,
+    required this.onClueTime,
+    required this.onDiscussionTime,
+    required this.onRoundLimit,
+  });
+
+  final Duration? clueTime;
+  final Duration? discussionTime;
+  final int? roundLimit;
+  final ValueChanged<Duration?> onClueTime;
+  final ValueChanged<Duration?> onDiscussionTime;
+  final ValueChanged<int?> onRoundLimit;
+
+  static String _seconds(Duration time) => '${time.inSeconds} s';
+
+  static String _timer(Duration? time) => time == null ? 'Off' : _seconds(time);
+
+  static String _rounds(int? limit) => limit == null ? 'Unlimited' : '$limit';
+
+  // "Clue off · Discussion 60 s · 5 rounds". Labelled parts, because two of
+  // the three can say "off" and a bare "Off · Off" does not say which is which.
+  String get _summary {
+    final clue = clueTime == null ? 'off' : _seconds(clueTime!);
+    final discussion = discussionTime == null
+        ? 'off'
+        : _seconds(discussionTime!);
+    final rounds = switch (roundLimit) {
+      null => 'Unlimited rounds',
+      1 => '1 round',
+      final limit => '$limit rounds',
+    };
+    return 'Clue $clue · Discussion $discussion · $rounds';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // The same white, outlined, rounded surface as the topic buttons above.
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(18),
+      side: BorderSide(color: Theme.of(context).colorScheme.outline),
+    );
+    return ExpansionTile(
+      leading: const Icon(Icons.tune_rounded),
+      title: const Text('Game options'),
+      subtitle: Text(_summary),
+      shape: shape,
+      collapsedShape: shape,
+      backgroundColor: Colors.white,
+      collapsedBackgroundColor: Colors.white,
+      clipBehavior: Clip.antiAlias,
+      expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+      childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      children: [
+        _Choices<Duration?>(
+          label: 'Clue timer',
+          choices: GameSettings.timerChoices,
+          selected: clueTime,
+          name: _timer,
+          onSelected: onClueTime,
+        ),
+        _Choices<Duration?>(
+          label: 'Discussion timer',
+          choices: GameSettings.timerChoices,
+          selected: discussionTime,
+          name: _timer,
+          onSelected: onDiscussionTime,
+        ),
+        _Choices<int?>(
+          label: 'Rounds',
+          choices: GameSettings.roundChoices,
+          selected: roundLimit,
+          name: _rounds,
+          onSelected: onRoundLimit,
+        ),
+      ],
+    );
+  }
+}
+
+/// One option: a heading over its choices as chips, exactly one selected.
+/// The chips wrap to a second line on a narrow phone instead of overflowing.
+class _Choices<T> extends StatelessWidget {
+  const _Choices({
+    required this.label,
+    required this.choices,
+    required this.selected,
+    required this.name,
+    required this.onSelected,
+  });
+
+  final String label;
+  final List<T> choices;
+  final T selected;
+  final String Function(T choice) name;
+  final ValueChanged<T> onSelected;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: 12),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontWeight: FontWeight.w700,
+            color: AppColors.ink,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final choice in choices)
+              ChoiceChip(
+                label: Text(name(choice)),
+                selected: choice == selected,
+                selectedColor: AppColors.lime,
+                backgroundColor: Colors.white,
+                // Tapping the chosen chip again keeps it chosen: every
+                // option always has exactly one value, like a radio group.
+                onSelected: (_) => onSelected(choice),
+              ),
+          ],
+        ),
+      ],
     ),
   );
 }

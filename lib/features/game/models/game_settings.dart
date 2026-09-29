@@ -21,6 +21,11 @@ class GameSettings {
     Duration(seconds: 90),
   ];
 
+  /// What the setup screen offers for the round limit, in order. `null` is
+  /// unlimited. Same reasoning as [timerChoices]: one list, kept here, so
+  /// every screen that asks (setup today, a room lobby later) offers the same.
+  static const roundChoices = <int?>[null, 3, 5, 10];
+
   /// Throws [ArgumentError] for a timer that is not positive or a round
   /// limit below one: neither can be played, so neither is stored.
   factory GameSettings({

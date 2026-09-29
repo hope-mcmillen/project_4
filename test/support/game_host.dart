@@ -39,8 +39,8 @@ class ChameleonAt implements Random {
 class GameHost {
   GameHost({this.settings, this.chameleonSeats = const [0]});
 
-  /// Null builds GameScreen without passing settings at all, which is how
-  /// the setup screen calls it today: that path must be the old game.
+  /// Null builds GameScreen without passing settings at all, so it falls back
+  /// to GameSettings.off: that path must be the game as it was before CHM-14.
   final GameSettings? settings;
   final List<int> chameleonSeats;
 
