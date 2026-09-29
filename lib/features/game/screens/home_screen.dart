@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 
 import '../../../app/theme.dart';
 import '../widgets/game_widgets.dart';
+import '../data/word_repository.dart';
+import '../data/local_word_repository.dart';
 import 'setup_screen.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({
+    super.key,
+    this.wordRepository = const LocalWordRepository(),
+  });
+  final WordRepository wordRepository;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -65,9 +71,11 @@ class HomeScreen extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         FilledButton.icon(
-          onPressed: () => Navigator.of(
-            context,
-          ).push(MaterialPageRoute<void>(builder: (_) => const SetupScreen())),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => SetupScreen(wordRepository: wordRepository),
+            ),
+          ),
           icon: const Icon(Icons.arrow_forward_rounded),
           label: const Text('Start a game'),
         ),
