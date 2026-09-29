@@ -28,7 +28,9 @@ When the app becomes inactive, hidden, paused, or detached, an open private view
 
 `FakeRoomRepository` is an in-memory stand-in until the backend is chosen (CHM-S1). `ChameleonApp` owns one instance for the whole app and passes it to `HomeScreen`, so hosting and joining on one device see the same rooms. Tests pass their own. A real backend implements the same interface; nothing above it changes.
 
-`CreateRoomScreen` owns a `HostLobbyController` (setup → creating → lobby → starting → started) for as long as the host stays on it, and switches to `HostLobbyView` once the room exists. Room codes are five characters from an alphabet without 0/O/1/I/L; `normalizeRoomCode` accepts lowercase, spaces and dashes for typed input.
+`CreateRoomScreen` owns a `HostLobbyController` (setup → creating → lobby → starting → started) for as long as the host stays on it, and switches to `HostLobbyView` once the room exists. `JoinRoomScreen` mirrors it for guests with a `JoinRoomController` (entry → joining → lobby → started) and `GuestLobbyView`. Unknown, full and started rooms and taken names come back as errors on the form so the player can retry. Both lobbies render players with the shared `LobbyPlayerList`.
+
+With the fake backend, rooms exist only in one app's memory, so hosting and joining work on the same device (and in `join_flow_test.dart`, which runs two app instances on one fake). Joining from a different phone needs the real backend. Room codes are five characters from an alphabet without 0/O/1/I/L; `normalizeRoomCode` accepts lowercase, spaces and dashes for typed input.
 
 ## Extend without tangling features
 
