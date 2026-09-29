@@ -3,15 +3,21 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme.dart';
 import '../../models/player_view.dart';
 import '../../widgets/game_widgets.dart';
+import '../../widgets/phase_timer.dart';
 
 class DiscussionPhase extends StatelessWidget {
   const DiscussionPhase({
     super.key,
     required this.view,
     required this.onReadyToVote,
+    this.discussionTime,
   });
   final PlayerView view;
   final VoidCallback onReadyToVote;
+
+  /// Countdown for the whole discussion, or null for none. Runs once:
+  /// GameScreen keeps one key for the phase, so rebuilds do not restart it.
+  final Duration? discussionTime;
 
   @override
   Widget build(BuildContext context) => PageBody(
@@ -21,6 +27,8 @@ class DiscussionPhase extends StatelessWidget {
         'Someone’s\nblending in.',
         style: Theme.of(context).textTheme.headlineMedium,
       ),
+      if (discussionTime case final time?)
+        PhaseTimer(label: 'Discussion time', duration: time),
       const InfoCard(
         color: AppColors.lime,
         child: Column(
