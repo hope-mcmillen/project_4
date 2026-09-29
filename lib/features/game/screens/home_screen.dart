@@ -167,7 +167,7 @@ class RulesScreen extends StatelessWidget {
         const InfoCard(
           color: AppColors.lime,
           child: Text(
-            'Starter house rules: a tied vote or an incorrect accusation lets the Chameleon win. Each round stands alone; there is no running score yet.',
+            'Starter house rules: a tied vote or an incorrect accusation lets the Chameleon win. Play again with the same crew to keep a running score: a group win gives every other player 1 point, a Chameleon win gives the Chameleon 2.',
           ),
         ),
       ],
