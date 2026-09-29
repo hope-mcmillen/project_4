@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../game/widgets/game_widgets.dart';
 import '../logic/join_room_controller.dart';
 import '../logic/room_repository.dart';
+import '../widgets/guest_lobby_view.dart';
 
 /// A guest's side of an online room. Owns the [JoinRoomController] for as
 /// long as the player stays here; leaving this screen leaves the session.
@@ -45,15 +46,7 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
       appBar: AppBar(title: const Text('Join a room')),
       body: switch (_guest.phase) {
         JoinPhase.entry || JoinPhase.joining => _buildForm(context),
-        _ => PageBody(
-          children: [
-            const Eyebrow('You’re in'),
-            Text(
-              _guest.room!.code,
-              style: Theme.of(context).textTheme.displaySmall,
-            ),
-          ],
-        ),
+        _ => GuestLobbyView(guest: _guest),
       },
     ),
   );

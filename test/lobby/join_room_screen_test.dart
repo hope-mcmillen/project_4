@@ -65,9 +65,47 @@ void main() {
     expect(find.text('Joining…'), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
+    // The waiting spinner never settles, so pump instead of pumpAndSettle.
     await tester.pump(const Duration(seconds: 1));
-    await tester.pumpAndSettle();
-    expect(find.text('YOU’RE IN'), findsOneWidget); // Eyebrow uppercases.
-    expect(find.text(room.code), findsOneWidget);
+    await tester.pump();
+    expect(find.text('You’re in, Blair!'), findsOneWidget);
+    expect(find.text('ROOM ${room.code}'), findsOneWidget); // Eyebrow caps.
+  });
+
+  testWidgets('the guest waits in the lobby until the host starts', (
+    tester,
+  ) async {
+    final rooms = FakeRoomRepository();
+    addTearDown(rooms.dispose);
+    final room = await rooms.createRoom(hostName: 'Alex', topicId: 'food');
+    await pumpScreen(tester, rooms, initialCode: room.code);
+    await tester.enterText(field('Your name'), 'Blair');
+    await tester.ensureVisible(find.text('Join room'));
+    await tester.tap(find.text('Join room'));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('Waiting for Alex to start…'), findsOneWidget);
+    expect(find.text('2 / 8'), findsOneWidget);
+    expect(find.text('Host'), findsOneWidget);
+    expect(find.text('You'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.widgetWithText(ListTile, 'Blair'),
+        matching: find.text('You'),
+      ),
+      findsOneWidget,
+    );
+
+    await rooms.joinRoom(code: room.code, name: 'Casey');
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('Casey'), findsOneWidget);
+
+    await rooms.startRound(code: room.code, playerId: room.hostId);
+    await tester.pump();
+    await tester.pump();
+    expect(find.textContaining('Round started!'), findsOneWidget);
+    expect(find.textContaining('Waiting for'), findsNothing);
   });
 }

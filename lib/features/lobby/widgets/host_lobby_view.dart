@@ -5,6 +5,7 @@ import '../../../app/theme.dart';
 import '../../game/widgets/game_widgets.dart';
 import '../logic/host_lobby_controller.dart';
 import '../models/room.dart';
+import 'lobby_widgets.dart';
 
 /// What the host sees once the room exists: the code to share, who has
 /// joined so far, and the button to start the round.
@@ -57,24 +58,7 @@ class HostLobbyView extends StatelessWidget {
         ),
         const Text('Friends open Chameleon, tap Join, and enter this code.'),
         const SizedBox(height: 24),
-        Row(
-          children: [
-            const Expanded(child: Eyebrow('In the room')),
-            Text(
-              '${room.players.length} / ${Room.maxPlayers}',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-        ),
-        for (final player in room.players)
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.person_outline_rounded),
-            title: Text(player.name),
-            trailing: player.id == room.hostId
-                ? const Chip(label: Text('Host'))
-                : null,
-          ),
+        LobbyPlayerList(room: room),
         if (host.error case final error?) ...[
           const SizedBox(height: 8),
           Text(
@@ -84,14 +68,7 @@ class HostLobbyView extends StatelessWidget {
         ],
         const SizedBox(height: 24),
         if (started)
-          const InfoCard(
-            color: AppColors.purple,
-            child: Text(
-              'Round started! Online roles are on their way; for now, '
-              'everyone keeps the room open.',
-              style: TextStyle(color: Colors.white),
-            ),
-          )
+          const RoundStartedCard()
         else ...[
           FilledButton.icon(
             onPressed: host.canStart ? host.startRound : null,
