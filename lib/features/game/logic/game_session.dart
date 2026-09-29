@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 
 import '../models/game_phase.dart';
@@ -59,14 +61,33 @@ typedef Standing = ({String name, int points});
 ///
 /// Players are identified by name. That is safe because a round's names are
 /// unique, and a session only ever accepts rounds played by its own crew.
+///
+/// A session is also one game, so the round limit (CHM-14) lives here and not
+/// in a round: it counts rounds across replays, the way the score does.
 class GameSession {
-  GameSession({required List<String> players, this.rule = const FlatWinRule()})
-    : players = List.unmodifiable(players),
-      _points = {for (final name in players) name: 0};
+  /// Throws [ArgumentError] if [roundLimit] is below one: a game that is over
+  /// before its first round could never show its result.
+  GameSession({
+    required List<String> players,
+    this.rule = const FlatWinRule(),
+    this.roundLimit,
+  }) : players = List.unmodifiable(players),
+       _points = {for (final name in players) name: 0} {
+    if (roundLimit != null && roundLimit! < 1) {
+      throw ArgumentError.value(
+        roundLimit,
+        'roundLimit',
+        'A game needs at least one round',
+      );
+    }
+  }
 
   /// The crew in seating order.
   final List<String> players;
   final ScoringRule rule;
+
+  /// Rounds in this game. Null means the crew can replay without end.
+  final int? roundLimit;
 
   final Map<String, int> _points;
   int _roundsPlayed = 0;
@@ -76,6 +97,21 @@ class GameSession {
   GameRepository? _lastRecorded;
 
   int get roundsPlayed => _roundsPlayed;
+
+  /// True once the last allowed round has been recorded: the result on
+  /// screen is the final one. Never true without a [roundLimit].
+  ///
+  /// Counts recorded rounds, so it turns true on the Nth result itself, not
+  /// when an (N+1)th round would begin.
+  bool get isOver => roundLimit != null && _roundsPlayed >= roundLimit!;
+
+  /// Everyone on the top score, in seat order. More than one is a tie, and
+  /// when [isOver] they are co-winners.
+  List<String> get leaders {
+    if (players.isEmpty) return const [];
+    final top = _points.values.reduce(max);
+    return List.unmodifiable(players.where((name) => _points[name] == top));
+  }
 
   /// Highest score first, ties in seat order. `List.sort` does not promise to
   /// keep equal items in order (today's SDK happens to for short lists), so
@@ -102,6 +138,11 @@ class GameSession {
     final result = round.view;
     if (result.phase != GamePhase.result || identical(round, _lastRecorded)) {
       return;
+    }
+    // Checked after the repeat test, so the final round may keep announcing
+    // itself; only a new round after the last one is refused.
+    if (isOver) {
+      throw StateError('This game is over; start a new game to play on');
     }
     if (!listEquals(result.players, players)) {
       throw ArgumentError.value(

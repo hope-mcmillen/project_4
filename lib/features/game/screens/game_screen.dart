@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../logic/game_repository.dart';
 import '../logic/game_session.dart';
 import '../models/game_phase.dart';
+import '../models/game_settings.dart';
 import '../models/player_view.dart';
 import 'phases/clues_phase.dart';
 import 'phases/discussion_phase.dart';
@@ -12,7 +13,15 @@ import 'phases/reveal_phase.dart';
 import 'phases/voting_phase.dart';
 
 class GameScreen extends StatefulWidget {
-  const GameScreen({super.key, required this.createGame});
+  const GameScreen({
+    super.key,
+    required this.createGame,
+    this.settings = GameSettings.off,
+  });
+
+  /// Timers and round limit for this game. The default, everything off, is
+  /// the game as it played before these settings existed.
+  final GameSettings settings;
 
   /// Builds a fresh round; called again for each replay.
   final GameRepository Function() createGame;
@@ -34,7 +43,10 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     _game = widget.createGame();
-    _session = GameSession(players: _game.view.players);
+    _session = GameSession(
+      players: _game.view.players,
+      roundLimit: widget.settings.roundLimit,
+    );
     _game.addListener(_recordRound);
     WidgetsBinding.instance.addObserver(this);
   }
@@ -138,15 +150,19 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         onReveal: _game.openPrivateView,
         onContinue: _game.finishReveal,
       ),
+      // The key changes with every clue turn, which is also what restarts
+      // the clue timer for each player.
       GamePhase.clues => CluesPhase(
         key: key,
         view: view,
         onOpen: _game.openPrivateView,
+        clueTime: widget.settings.clueTime,
         onNext: _game.finishClue,
       ),
       GamePhase.discussion => DiscussionPhase(
         key: key,
         view: view,
+        discussionTime: widget.settings.discussionTime,
         onReadyToVote: _game.startVoting,
         onAnotherRound: _game.startAnotherClueRound,
       ),

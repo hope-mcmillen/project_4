@@ -281,4 +281,76 @@ void main() {
   test('the default rule is candidate (a)', () {
     expect(session.rule, isA<FlatWinRule>());
   });
+
+  group('round limit (CHM-14)', () {
+    void playTiedRound(GameSession session) {
+      final round = newRound();
+      addTearDown(round.dispose);
+      play(session, round, votes: tiedVote);
+    }
+
+    test('a session is unlimited by default and never ends', () {
+      expect(session.roundLimit, isNull);
+      expect(session.isOver, isFalse);
+      for (var i = 0; i < 5; i++) {
+        playTiedRound(session);
+        expect(session.isOver, isFalse);
+      }
+      expect(session.roundsPlayed, 5);
+    });
+
+    test('ends exactly when the Nth round is recorded', () {
+      session = GameSession(players: crew, roundLimit: 3);
+      expect(session.isOver, isFalse);
+      playTiedRound(session);
+      expect(session.isOver, isFalse);
+      playTiedRound(session);
+      expect(session.isOver, isFalse);
+      playTiedRound(session);
+      expect(session.isOver, isTrue);
+      expect(session.roundsPlayed, 3);
+    });
+
+    test('an unfinished round does not bring the end closer', () {
+      session = GameSession(players: crew, roundLimit: 1);
+      final round = newRound();
+      addTearDown(round.dispose);
+      play(session, round, votes: caseyCaught); // stops at the final guess
+      expect(session.isOver, isFalse);
+      round.guessWord(wrongGuess);
+      session.recordRound(round);
+      expect(session.isOver, isTrue);
+    });
+
+    test('a finished game takes no further rounds', () {
+      session = GameSession(players: crew, roundLimit: 1);
+      playTiedRound(session);
+      expect(() => playTiedRound(session), throwsStateError);
+      expect(session.roundsPlayed, 1);
+      expect(scores(session)['Casey'], 2);
+    });
+
+    test('a limit below one round is rejected', () {
+      expect(
+        () => GameSession(players: crew, roundLimit: 0),
+        throwsArgumentError,
+      );
+    });
+  });
+
+  group('leaders', () {
+    test('is the single top scorer', () {
+      final round = newRound();
+      addTearDown(round.dispose);
+      play(session, round, votes: tiedVote); // Casey +2
+      expect(session.leaders, ['Casey']);
+    });
+
+    test('names every player tied on top, in seat order', () {
+      final round = newRound();
+      addTearDown(round.dispose);
+      play(session, round, votes: caseyCaught, guess: wrongGuess);
+      expect(session.leaders, ['Alex', 'Blair', 'Drew']);
+    });
+  });
 }

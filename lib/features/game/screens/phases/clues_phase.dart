@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/player_view.dart';
 import '../../widgets/game_widgets.dart';
+import '../../widgets/phase_timer.dart';
 import 'handoff_page.dart';
 
 class CluesPhase extends StatelessWidget {
@@ -10,10 +11,15 @@ class CluesPhase extends StatelessWidget {
     required this.view,
     required this.onOpen,
     required this.onNext,
+    this.clueTime,
   });
   final PlayerView view;
   final VoidCallback onOpen;
   final VoidCallback onNext;
+
+  /// Countdown for this player's clue, or null for none. It restarts for
+  /// each player because GameScreen gives every clue turn its own key.
+  final Duration? clueTime;
 
   @override
   Widget build(BuildContext context) => !view.privateOpen
@@ -29,6 +35,8 @@ class CluesPhase extends StatelessWidget {
             const Text(
               'Say your clue out loud. Make it convincing, but don’t make the secret too obvious.',
             ),
+            if (clueTime case final time?)
+              PhaseTimer(label: 'Clue time', duration: time),
             InfoCard(
               child: Text(
                 view.roleWord ?? view.topic.name,

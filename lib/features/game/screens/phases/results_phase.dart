@@ -21,7 +21,17 @@ class ResultsPhase extends StatelessWidget {
   /// Only this screen shows standings: a round's points reveal its Chameleon.
   final GameSession session;
   final VoidCallback onReplay;
+
+  /// Back to setup. Offered as "New game" once a round-limited game is over.
   final VoidCallback onLeave;
+
+  static String _points(int points) => points == 1 ? '1 pt' : '$points pts';
+
+  // "A wins!", "A & B share the win!", "A, B & C share the win!"
+  static String _winnerLine(List<String> winners) => winners.length == 1
+      ? '${winners.single} wins!'
+      : '${winners.sublist(0, winners.length - 1).join(', ')} '
+            '& ${winners.last} share the win!';
 
   @override
   Widget build(BuildContext context) => PageBody(
@@ -74,6 +84,28 @@ class ResultsPhase extends StatelessWidget {
           ],
         ),
       ),
+      // Only on the last round of a limited game. Before that, and in every
+      // unlimited game, this screen is exactly as it was before CHM-14.
+      if (session.isOver)
+        InfoCard(
+          color: AppColors.mint,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Eyebrow('Game over'),
+              Text(
+                _winnerLine(session.leaders),
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${_points(session.standings.first.points)} after '
+                '${session.roundsPlayed == 1 ? '1 round' : '${session.roundsPlayed} rounds'}',
+                style: const TextStyle(color: AppColors.ink),
+              ),
+            ],
+          ),
+        ),
       InfoCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,9 +125,7 @@ class ResultsPhase extends StatelessWidget {
                 child: Row(
                   children: [
                     Expanded(child: Text(standing.name)),
-                    Text(
-                      standing.points == 1 ? '1 pt' : '${standing.points} pts',
-                    ),
+                    Text(_points(standing.points)),
                   ],
                 ),
               ),
@@ -107,16 +137,26 @@ class ResultsPhase extends StatelessWidget {
           ],
         ),
       ),
-      FilledButton.icon(
-        onPressed: onReplay,
-        icon: const Icon(Icons.replay),
-        label: const Text('Play again · Same crew'),
-      ),
-      const SizedBox(height: 12),
-      OutlinedButton(
-        onPressed: onLeave,
-        child: const Text('Change players or topic'),
-      ),
+      // A finished game cannot be replayed: the session would refuse the
+      // next round. "New game" goes to setup, which starts a fresh session.
+      if (session.isOver)
+        FilledButton.icon(
+          onPressed: onLeave,
+          icon: const Icon(Icons.flag_outlined),
+          label: const Text('New game'),
+        )
+      else ...[
+        FilledButton.icon(
+          onPressed: onReplay,
+          icon: const Icon(Icons.replay),
+          label: const Text('Play again · Same crew'),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton(
+          onPressed: onLeave,
+          child: const Text('Change players or topic'),
+        ),
+      ],
     ],
   );
 }
