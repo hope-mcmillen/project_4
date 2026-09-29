@@ -24,14 +24,14 @@ The cloned project folder is `chameleon`. The Dart package is still named `proje
 
 - A custom home screen, shared theme, drawn mascot, and in-app rules.
 - Setup for 3–8 players, with four default slots and unique-name validation.
-- Three original topic boards: Food & drink, Out & about, After class.
+- Ten original topic boards, each with 12 distinct words (120 total), and a full word preview before choosing.
 - Exactly one random Chameleon and one shared secret word each round.
 - Private role handoffs; private views hide when the app loses focus.
 - One spoken clue per player, group discussion, and private ballots.
 - Vote tally, the Chameleon's final guess, results, and replay with the same crew.
 - An exit confirmation that preserves player setup when leaving a round.
 
-This is **offline pass-and-play on one device**. No accounts, server, room codes, network multiplayer, saved games, or cumulative scores are implemented. Closing or restarting the app clears the round. Keep the phone private during reveals; this starter does not block screenshots or screen recording.
+This is **offline pass-and-play on one device**. No accounts, room codes, network multiplayer, saved games, or cumulative scores are implemented. An optional Supabase connection supplies topic content; rounds still run locally. Closing or restarting the app clears the round. Keep the phone private during reveals; this starter does not block screenshots or screen recording.
 
 ## Starter rules
 
@@ -72,7 +72,7 @@ lib/
       role_cards.dart               # ChameleonCard and InsiderCard
 ```
 
-The controller owns game transitions. Screens never touch it directly: they read a `PlayerView` from a `GameRepository` and call its actions, rebuilding through `ListenableBuilder`. `LocalGameRepository` adapts the controller for pass-and-play. Production role selection uses `Random.secure`; tests inject deterministic randomness. No new third-party dependencies were added.
+The controller owns game transitions. Screens never touch it directly: they read a `PlayerView` from a `GameRepository` and call its actions, rebuilding through `ListenableBuilder`. `LocalGameRepository` adapts the controller for pass-and-play. Production role selection uses `Random.secure`; tests inject deterministic randomness. The HTTP package supports the optional Supabase topic catalog.
 
 ## Checks
 
@@ -86,3 +86,9 @@ flutter build web
 Tests cover role secrecy, all winning outcomes, validation, illegal transitions, min/max players, a complete UI round, replay, lifecycle hiding, leaving a round, and small-screen layouts. GitHub Actions (`.github/workflows/flutter.yml`) runs formatting, analysis, tests, a web build, and `flutter build apk --release` on every push and pull request, and keeps the APK as the run's `chameleon-apk` artifact. Pushing a `v*.*.*` tag also attaches the APK to a GitHub Release. The APK is signed with the Android debug key: it installs directly for demos, but is not store-ready.
 
 See [the team plan](docs/TEAM_PLAN.md) for a suggested four-person work split and [the architecture notes](docs/ARCHITECTURE.md) before extending game state.
+
+## Topic library
+
+Tap a topic on setup to preview all 12 words. Choose **Choose this topic** to select it, or **Keep browsing** to leave the previous selection unchanged. The preview does not pick or reveal the next round’s secret word.
+
+`SetupScreen` accepts a `WordRepository` and defaults to `LocalWordRepository`, which returns the existing const catalog. CHM-2 adds `RemoteWordRepository`, which fetches published Supabase packs, caches them for ten minutes, and falls back to cached or bundled topics on failure. One repository is shared throughout the app. Setup handles loading, empty results, and retryable failures. See [Supabase setup](docs/SUPABASE.md) for the backend schema, seed data, public-key configuration, and cache behavior. Without configuration the app remains fully local.
