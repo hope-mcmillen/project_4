@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:project_4/app/chameleon_app.dart';
+import 'package:project_4/features/game/data/topic_packs.dart';
 
 // Trello CHM-14, second half: the host picks timers and a round limit on the
 // setup screen, and the game dealt from there plays by them.
@@ -86,6 +87,8 @@ Future<void> revealRoles(WidgetTester tester) async {
     await tapText(tester, 'Reveal my role');
     await tapText(tester, 'Hide & continue');
   }
+  // The first clue turn waits on its hand-off page.
+  await tapText(tester, 'View my clue screen');
 }
 
 String cluePrompt(String name) => '$name,\nyour one word?';
@@ -94,6 +97,7 @@ String cluePrompt(String name) => '$name,\nyour one word?';
 Future<void> giveClues(WidgetTester tester) async {
   for (var i = 0; i < crew.length - 1; i++) {
     await tapText(tester, 'Clue given · Next player');
+    await tapText(tester, 'View my clue screen');
   }
   await tapText(tester, 'Clue given · Discuss');
 }
@@ -219,7 +223,15 @@ void main() {
     // The rest of setup still reaches the game: names and topic.
     await revealRoles(tester);
     expect(find.text(cluePrompt('Ana')), findsOneWidget);
-    expect(find.text('MUSIC ROOM'), findsOneWidget);
+    // The clue card shows this player's word, or the topic for the Chameleon.
+    final music = topicPacks.singleWhere((pack) => pack.name == topic);
+    expect(
+      [
+        music.name,
+        ...music.words,
+      ].where((text) => find.text(text).evaluate().isNotEmpty),
+      hasLength(1),
+    );
 
     // Clue turn: the clue timer, counting down, and nothing else.
     expect(find.text('Clue time'), findsOneWidget);
@@ -290,6 +302,7 @@ void main() {
               ? 'Clue given · Discuss'
               : 'Clue given · Next player',
         );
+        if (i < crew.length - 1) await tapText(tester, 'View my clue screen');
       }
       expect(find.text('Ready to vote'), findsOneWidget);
       expectNoTimer();

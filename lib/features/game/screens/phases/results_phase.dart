@@ -36,6 +36,31 @@ class ResultsPhase extends StatelessWidget {
   @override
   Widget build(BuildContext context) => PageBody(
     children: [
+      // Only on the last round of a limited game. Before that, and in every
+      // unlimited game, this screen is exactly as it was before CHM-14.
+      // First on the page, above the round's own result: on a phone the top
+      // of the screen is all a player sees, and the end of the game is the
+      // news (CHM-17). The round result, votes and score follow below.
+      if (session.isOver)
+        InfoCard(
+          color: AppColors.mint,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Eyebrow('Game over'),
+              Text(
+                _winnerLine(session.leaders),
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${_points(session.standings.first.points)} after '
+                '${session.roundsPlayed == 1 ? '1 round' : '${session.roundsPlayed} rounds'}',
+                style: const TextStyle(color: AppColors.ink),
+              ),
+            ],
+          ),
+        ),
       const Eyebrow('The secret is out'),
       Text(
         view.winner == RoundWinner.group
@@ -84,28 +109,6 @@ class ResultsPhase extends StatelessWidget {
           ],
         ),
       ),
-      // Only on the last round of a limited game. Before that, and in every
-      // unlimited game, this screen is exactly as it was before CHM-14.
-      if (session.isOver)
-        InfoCard(
-          color: AppColors.mint,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Eyebrow('Game over'),
-              Text(
-                _winnerLine(session.leaders),
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${_points(session.standings.first.points)} after '
-                '${session.roundsPlayed == 1 ? '1 round' : '${session.roundsPlayed} rounds'}',
-                style: const TextStyle(color: AppColors.ink),
-              ),
-            ],
-          ),
-        ),
       InfoCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

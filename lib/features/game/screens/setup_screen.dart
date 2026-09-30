@@ -439,7 +439,7 @@ class _Choices<T> extends StatelessWidget {
               ChoiceChip(
                 label: Text(name(choice)),
                 selected: choice == selected,
-                selectedColor: AppColors.lime,
+                selectedColor: AppColors.mint,
                 backgroundColor: Colors.white,
                 // Tapping the chosen chip again keeps it chosen: every
                 // option always has exactly one value, like a radio group.
