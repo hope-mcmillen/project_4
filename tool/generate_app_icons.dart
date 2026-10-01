@@ -35,7 +35,7 @@ import 'package:project_4/features/game/widgets/game_widgets.dart';
 
 /// Icon background. The home screen shows the mascot on this purple card, and
 /// web/manifest.json already uses it as the theme colour.
-const Color iconBackground = AppColors.purple;
+const Color iconBackground = AppColors.teal;
 
 /// ChameleonMascot's own logical size (see its SizedBox in game_widgets.dart).
 const Size mascotSize = Size(280, 165);
