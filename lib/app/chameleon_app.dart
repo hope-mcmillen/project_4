@@ -3,7 +3,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../features/game/data/word_repository.dart';
 import '../features/game/screens/home_screen.dart';
-import '../features/lobby/logic/fake_room_repository.dart';
 import '../features/lobby/logic/room_repository.dart';
 import 'theme.dart';
 import 'word_repository_config.dart';
@@ -17,8 +16,7 @@ class ChameleonApp extends StatefulWidget {
   });
   final WordRepository? wordRepository;
 
-  /// The online room backend. Defaults to an in-memory fake until CHM-S1
-  /// picks a real one; tests can pass their own.
+  /// Tests may inject an in-memory room backend.
   final RoomRepository? rooms;
   final SupabaseClient? onlineClient;
 
@@ -27,20 +25,9 @@ class ChameleonApp extends StatefulWidget {
 }
 
 class _ChameleonAppState extends State<ChameleonApp> {
-  FakeRoomRepository? _ownRooms;
-
-  RoomRepository get _rooms =>
-      widget.rooms ?? (_ownRooms ??= FakeRoomRepository());
-
   // One repository per app session: opening setup again reuses its cache.
   late final WordRepository _words =
       widget.wordRepository ?? createWordRepository();
-
-  @override
-  void dispose() {
-    _ownRooms?.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) => MaterialApp(
@@ -49,7 +36,7 @@ class _ChameleonAppState extends State<ChameleonApp> {
     theme: buildTheme(),
     home: HomeScreen(
       wordRepository: _words,
-      rooms: _rooms,
+      rooms: widget.rooms,
       onlineClient: widget.onlineClient,
     ),
   );

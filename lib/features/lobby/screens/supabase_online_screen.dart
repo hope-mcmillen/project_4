@@ -42,6 +42,7 @@ class _SupabaseOnlineScreenState extends State<SupabaseOnlineScreen>
   String? error;
   Timer? refreshTimer;
   RealtimeChannel? channel;
+  int refreshVersion = 0;
 
   @override
   void initState() {
@@ -166,12 +167,13 @@ class _SupabaseOnlineScreenState extends State<SupabaseOnlineScreen>
   Future<void> _refresh() async {
     final id = roomId;
     if (id == null) return;
+    final version = ++refreshVersion;
     try {
       final nextRoom = await repo.room(id);
       final nextMembers = nextRoom == null
           ? <Map<String, dynamic>>[]
           : await repo.members(id);
-      if (!mounted || roomId != id) return;
+      if (!mounted || roomId != id || version != refreshVersion) return;
       final phase = nextRoom?['status'] as String?;
       if (phase != 'reveal') {
         privateRole = null;
@@ -180,9 +182,12 @@ class _SupabaseOnlineScreenState extends State<SupabaseOnlineScreen>
       setState(() {
         room = nextRoom;
         members = nextMembers;
+        error = null;
       });
     } catch (e) {
-      if (mounted) setState(() => error = _message(e));
+      if (mounted && version == refreshVersion) {
+        setState(() => error = _message(e));
+      }
     }
   }
 
