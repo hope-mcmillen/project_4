@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../game/models/topic_pack.dart';
@@ -106,7 +107,14 @@ class _SupabaseOnlineScreenState extends State<SupabaseOnlineScreen>
   }
 
   String _message(Object e) {
-    if (e is PostgrestException) return e.message;
+    if (e is PostgrestException) {
+      if (e.message == 'Room not found or expired') {
+        return 'No active room matches ${code.text.trim().toUpperCase()}. '
+            'Ask the host to copy a new code from Host online, keep the room '
+            'open, and make sure everyone uses the same version of Chameleon.';
+      }
+      return e.message;
+    }
     if (e is AuthException) return e.message;
     return 'Connection failed. Check your internet and try again.';
   }
@@ -303,10 +311,20 @@ class _SupabaseOnlineScreenState extends State<SupabaseOnlineScreen>
 
   List<Widget> _game() {
     final phase = room!['status'] as String;
+    final roomCode = room!['code'] as String;
     return [
-      Text(
-        'Room ${room!['code']}',
-        style: Theme.of(context).textTheme.headlineMedium,
+      Text('Room $roomCode', style: Theme.of(context).textTheme.headlineMedium),
+      TextButton.icon(
+        onPressed: () async {
+          await Clipboard.setData(ClipboardData(text: roomCode));
+          if (mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Room code copied')));
+          }
+        },
+        icon: const Icon(Icons.copy),
+        label: const Text('Copy room code'),
       ),
       Text('Share this code with each player on their own phone.'),
       const SizedBox(height: 12),
