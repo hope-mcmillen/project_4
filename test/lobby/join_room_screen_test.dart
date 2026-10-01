@@ -69,7 +69,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     await tester.pump();
     expect(find.text('You’re in, Blair!'), findsOneWidget);
-    expect(find.text('ROOM ${room.code}'), findsOneWidget); // Eyebrow caps.
+    expect(find.text(room.code), findsOneWidget);
   });
 
   testWidgets('the guest waits in the lobby until the host starts', (

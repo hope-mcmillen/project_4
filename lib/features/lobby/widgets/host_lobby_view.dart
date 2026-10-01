@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
-import '../../../app/theme.dart';
+import 'room_code_badge.dart';
 import '../../game/widgets/game_widgets.dart';
 import '../logic/host_lobby_controller.dart';
 import '../models/room.dart';
@@ -14,13 +13,6 @@ class HostLobbyView extends StatelessWidget {
 
   final HostLobbyController host;
 
-  Future<void> _copyCode(BuildContext context, String code) async {
-    await Clipboard.setData(ClipboardData(text: code));
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('Copied $code')));
-  }
-
   @override
   Widget build(BuildContext context) {
     final room = host.room!;
@@ -30,32 +22,12 @@ class HostLobbyView extends StatelessWidget {
 
     return PageBody(
       children: [
-        const Eyebrow('Your room code'),
-        InfoCard(
-          color: AppColors.teal,
-          child: Row(
-            children: [
-              Expanded(
-                child: Semantics(
-                  label: 'Room code ${room.code.split('').join(' ')}',
-                  excludeSemantics: true,
-                  child: Text(
-                    room.code,
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 6,
-                    ),
-                  ),
-                ),
-              ),
-              IconButton(
-                tooltip: 'Copy code',
-                onPressed: () => _copyCode(context, room.code),
-                icon: const Icon(Icons.copy_rounded),
-              ),
-            ],
-          ),
+        Align(
+          alignment: Alignment.topRight,
+          child: RoomCodeBadge(code: room.code),
         ),
+        const SizedBox(height: 16),
+        Text('Your lobby', style: Theme.of(context).textTheme.headlineMedium),
         const Text('Friends open Chameleon, tap Join, and enter this code.'),
         const SizedBox(height: 24),
         LobbyPlayerList(room: room),

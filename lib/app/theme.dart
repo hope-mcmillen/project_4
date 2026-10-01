@@ -4,6 +4,7 @@ abstract final class AppColors {
   static const ink = Color(0xFF3B8719);
   static const paper = Color(0xFFE6EBC6);
   static const teal = Color(0xFF3E9B99);
+  static const onTeal = Color(0xFF082D2C);
   static const sage = Color(0xFFD2E4B9);
   static const muted = Color(0xFF506B43);
   static const card = Color(0xFFF5F7E9);
@@ -19,10 +20,10 @@ ThemeData buildTheme() {
         seedColor: AppColors.teal,
         surface: AppColors.paper,
       ).copyWith(
-        primary: AppColors.ink,
+        primary: AppColors.deepTeal,
         onPrimary: AppColors.card,
-        primaryContainer: AppColors.sage,
-        onPrimaryContainer: AppColors.forest,
+        primaryContainer: AppColors.mint,
+        onPrimaryContainer: AppColors.deepTeal,
         secondary: AppColors.teal,
         onSecondary: AppColors.deepTeal,
         secondaryContainer: AppColors.mint,
@@ -30,9 +31,9 @@ ThemeData buildTheme() {
         tertiary: AppColors.teal,
         onSurface: AppColors.ink,
         onSurfaceVariant: AppColors.muted,
-        surfaceContainerHighest: AppColors.sage,
+        surfaceContainerHighest: AppColors.mint,
         outline: AppColors.outline,
-        outlineVariant: AppColors.sage,
+        outlineVariant: AppColors.mint,
         surfaceTint: Colors.transparent,
       );
   return ThemeData(
@@ -68,7 +69,20 @@ ThemeData buildTheme() {
       bodyLarge: TextStyle(fontSize: 16, height: 1.5, color: AppColors.ink),
       bodyMedium: TextStyle(fontSize: 14, height: 1.5, color: AppColors.ink),
     ).apply(bodyColor: AppColors.ink, displayColor: AppColors.ink),
-    iconTheme: const IconThemeData(color: AppColors.ink),
+    iconTheme: const IconThemeData(color: AppColors.deepTeal),
+    listTileTheme: const ListTileThemeData(
+      iconColor: AppColors.deepTeal,
+      selectedColor: AppColors.deepTeal,
+      selectedTileColor: AppColors.mint,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(16)),
+      ),
+      titleTextStyle: TextStyle(
+        fontSize: 17,
+        fontWeight: FontWeight.w700,
+        color: AppColors.deepTeal,
+      ),
+    ),
     bottomSheetTheme: const BottomSheetThemeData(
       backgroundColor: AppColors.paper,
       surfaceTintColor: Colors.transparent,
@@ -79,8 +93,8 @@ ThemeData buildTheme() {
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: AppColors.ink,
-        foregroundColor: AppColors.card,
+        backgroundColor: AppColors.teal,
+        foregroundColor: AppColors.onTeal,
         minimumSize: const Size(double.infinity, 56),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
@@ -90,7 +104,8 @@ ThemeData buildTheme() {
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         minimumSize: const Size(double.infinity, 52),
-        foregroundColor: AppColors.ink,
+        foregroundColor: AppColors.deepTeal,
+        side: const BorderSide(color: AppColors.teal, width: 1.5),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
     ),

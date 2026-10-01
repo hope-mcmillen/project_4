@@ -111,9 +111,9 @@ void main() {
     await tapText(tester, 'Create room');
     await tester.pump();
 
-    await tester.tap(find.byTooltip('Copy code'));
+    await tester.tap(find.byTooltip('Copy room code'));
     await tester.pump();
     expect(copied, [shownCode(tester)]);
-    expect(find.text('Copied ${copied.single}'), findsOneWidget);
+    expect(find.text('Room code copied'), findsOneWidget);
   });
 }

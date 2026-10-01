@@ -26,6 +26,7 @@ class ResultsPhase extends StatelessWidget {
   @override
   Widget build(BuildContext context) => PageBody(
     children: [
+      TopicBanner(title: view.topic.name),
       const Eyebrow('The secret is out'),
       Text(
         view.winner == RoundWinner.group
@@ -36,7 +37,7 @@ class ResultsPhase extends StatelessWidget {
       const SizedBox(height: 12),
       Text(view.resultReason!),
       InfoCard(
-        color: AppColors.sage,
+        color: AppColors.mint,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

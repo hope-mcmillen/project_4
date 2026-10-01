@@ -1,11 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../game/models/topic_pack.dart';
 import '../../game/widgets/game_widgets.dart';
+import '../../game/widgets/role_cards.dart';
+import '../widgets/room_code_badge.dart';
 import '../supabase_online_repository.dart';
 
 /// One device per player. The database owns all game transitions and secrets.
@@ -14,9 +15,11 @@ class SupabaseOnlineScreen extends StatefulWidget {
     super.key,
     required this.client,
     required this.joining,
+    this.repository,
   });
   final SupabaseClient client;
   final bool joining;
+  final SupabaseOnlineRepository? repository;
 
   @override
   State<SupabaseOnlineScreen> createState() => _SupabaseOnlineScreenState();
@@ -24,9 +27,8 @@ class SupabaseOnlineScreen extends StatefulWidget {
 
 class _SupabaseOnlineScreenState extends State<SupabaseOnlineScreen>
     with WidgetsBindingObserver {
-  late final SupabaseOnlineRepository repo = SupabaseOnlineRepository(
-    widget.client,
-  );
+  late final SupabaseOnlineRepository repo =
+      widget.repository ?? SupabaseOnlineRepository(widget.client);
   final name = TextEditingController();
   final code = TextEditingController();
   final clue = TextEditingController();
@@ -141,30 +143,7 @@ class _SupabaseOnlineScreenState extends State<SupabaseOnlineScreen>
       roomId = id;
       await _refresh();
       // Realtime makes changes immediate. Polling also recovers a dropped socket.
-      channel = widget.client.channel('online:$id')
-        ..onPostgresChanges(
-          event: PostgresChangeEvent.all,
-          schema: 'public',
-          table: 'online_rooms',
-          filter: PostgresChangeFilter(
-            type: PostgresChangeFilterType.eq,
-            column: 'id',
-            value: id,
-          ),
-          callback: (_) => _refresh(),
-        )
-        ..onPostgresChanges(
-          event: PostgresChangeEvent.all,
-          schema: 'public',
-          table: 'online_members',
-          filter: PostgresChangeFilter(
-            type: PostgresChangeFilterType.eq,
-            column: 'room_id',
-            value: id,
-          ),
-          callback: (_) => _refresh(),
-        )
-        ..subscribe();
+      channel = repo.watch(id, _refresh);
       refreshTimer = Timer.periodic(
         const Duration(seconds: 5),
         (_) => _refresh(),
@@ -183,7 +162,10 @@ class _SupabaseOnlineScreenState extends State<SupabaseOnlineScreen>
           : await repo.members(id);
       if (!mounted || roomId != id || version != refreshVersion) return;
       final phase = nextRoom?['status'] as String?;
-      if (phase != 'reveal') {
+      if ((phase != 'reveal' && phase != 'clues') ||
+          phase != room?['status'] ||
+          nextRoom?['turn'] != room?['turn'] ||
+          nextRoom?['clue_round'] != room?['clue_round']) {
         privateRole = null;
         roleVisible = false;
       }
@@ -257,6 +239,13 @@ class _SupabaseOnlineScreenState extends State<SupabaseOnlineScreen>
         icon: const Icon(Icons.arrow_back),
         onPressed: _leave,
       ),
+      actions: [
+        if (room != null)
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: RoomCodeBadge(code: room!['code'] as String),
+          ),
+      ],
     ),
     body: PageBody(
       children: [
@@ -296,6 +285,7 @@ class _SupabaseOnlineScreenState extends State<SupabaseOnlineScreen>
       const Text('Choose a topic. Everyone can see the word board.'),
       for (final pack in topics)
         ListTile(
+          selected: selectedTopic == pack.id,
           title: Text(pack.name),
           subtitle: Text(pack.words.join(' · ')),
           leading: Icon(
@@ -311,24 +301,8 @@ class _SupabaseOnlineScreenState extends State<SupabaseOnlineScreen>
 
   List<Widget> _game() {
     final phase = room!['status'] as String;
-    final roomCode = room!['code'] as String;
     return [
-      Text('Room $roomCode', style: Theme.of(context).textTheme.headlineMedium),
-      TextButton.icon(
-        onPressed: () async {
-          await Clipboard.setData(ClipboardData(text: roomCode));
-          if (mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('Room code copied')));
-          }
-        },
-        icon: const Icon(Icons.copy),
-        label: const Text('Copy room code'),
-      ),
-      Text('Share this code with each player on their own phone.'),
-      const SizedBox(height: 12),
-      Text('Topic: ${topic?.name ?? room!['topic_id']}'),
+      TopicBanner(title: topic?.name ?? room!['topic_id'] as String),
       if (phase == 'lobby') ..._lobby(),
       if (phase == 'reveal') ..._reveal(),
       if (phase == 'clues') ..._clues(),
@@ -340,6 +314,7 @@ class _SupabaseOnlineScreenState extends State<SupabaseOnlineScreen>
   }
 
   List<Widget> _lobby() => [
+    const Text('Invite friends using the code in the top corner.'),
     const SizedBox(height: 16),
     Text(
       'Players (${members.length}/8)',
@@ -354,6 +329,7 @@ class _SupabaseOnlineScreenState extends State<SupabaseOnlineScreen>
       const Text('Change topic (everyone will need to ready up again):'),
       for (final pack in topics)
         ListTile(
+          selected: room!['topic_id'] == pack.id,
           title: Text(pack.name),
           leading: Icon(
             room!['topic_id'] == pack.id
@@ -395,13 +371,13 @@ class _SupabaseOnlineScreenState extends State<SupabaseOnlineScreen>
         }),
       )
     else ...[
-      InfoCard(
-        child: Text(
-          privateRole?['is_chameleon'] == true
-              ? 'You are the Chameleon. Blend in without knowing the word.'
-              : 'The secret word is: ${privateRole?['word']}',
+      if (privateRole?['is_chameleon'] == true)
+        const ChameleonCard()
+      else
+        InsiderCard(
+          topicName: topic?.name ?? '',
+          word: privateRole?['word'] as String? ?? '',
         ),
-      ),
       _button(
         'Hide role and continue',
         () => _act(() async {
@@ -424,6 +400,29 @@ class _SupabaseOnlineScreenState extends State<SupabaseOnlineScreen>
       Text('Give one clue', style: Theme.of(context).textTheme.titleLarge),
       Text('It is ${current?['name'] ?? 'the next player'}\'s turn.'),
       if (current?['user_id'] == repo.userId) ...[
+        if (!roleVisible)
+          _button(
+            'View my clue screen',
+            () => _act(() async {
+              final role = await repo.role(roomId!);
+              if (mounted) {
+                setState(() {
+                  privateRole = role;
+                  roleVisible = true;
+                });
+              }
+            }),
+          )
+        else
+          TopicBanner(
+            title: privateRole?['is_chameleon'] == true
+                ? topic?.name ?? ''
+                : privateRole?['word'] as String? ?? '',
+            label: privateRole?['is_chameleon'] == true
+                ? 'TOPIC'
+                : 'SECRET WORD',
+            chameleon: privateRole?['is_chameleon'] == true,
+          ),
         TextField(
           controller: clue,
           maxLength: 40,
@@ -460,6 +459,22 @@ class _SupabaseOnlineScreenState extends State<SupabaseOnlineScreen>
       ),
     if (isHost)
       _button('Start voting', () => _act(() => repo.startVoting(roomId!))),
+    if (isHost)
+      _button(
+        'Another Round',
+        () => _act(
+          () => repo.anotherRound(
+            roomId!,
+            (room!['clue_round'] as num?)?.toInt() ?? 1,
+          ),
+        ),
+      ),
+    const SizedBox(height: 12),
+    Text(
+      isHost
+          ? 'Need more clues? Another Round keeps the same roles and secret word.'
+          : 'The host can start voting or choose Another Round for more clues.',
+    ),
   ];
 
   List<Widget> _voting() => [
@@ -493,6 +508,7 @@ class _SupabaseOnlineScreenState extends State<SupabaseOnlineScreen>
     ),
     const Text('One last chance: guess the secret word from the topic board.'),
     if (room!['result_chameleon'] == repo.userId && topic != null) ...[
+      const ChameleonMascot(),
       for (final word in topic!.words)
         ListTile(
           title: Text(word),

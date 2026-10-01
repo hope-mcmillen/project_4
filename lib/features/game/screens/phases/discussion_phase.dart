@@ -24,7 +24,7 @@ class DiscussionPhase extends StatelessWidget {
         style: Theme.of(context).textTheme.headlineMedium,
       ),
       const InfoCard(
-        color: AppColors.sage,
+        color: AppColors.mint,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

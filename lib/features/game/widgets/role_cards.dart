@@ -16,7 +16,7 @@ class ChameleonCard extends StatelessWidget {
       gradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [AppColors.ink, AppColors.forest],
+        colors: [AppColors.teal, AppColors.deepTeal],
       ),
       borderRadius: BorderRadius.circular(28),
       border: Border.all(color: AppColors.sage.withValues(alpha: 0.35)),
@@ -26,10 +26,16 @@ class ChameleonCard extends StatelessWidget {
         const ChameleonMascot(),
         const SizedBox(height: 24),
         Text(
-          'You are the chameleon, try and stay hidden among the other players',
+          'You’re the Chameleon.',
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.headlineMedium
               ?.copyWith(color: AppColors.card),
+        ),
+        const SizedBox(height: 12),
+        const Text(
+          'Blend in. Only you don’t know the word.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: AppColors.card, fontSize: 16, height: 1.5),
         ),
       ],
     ),

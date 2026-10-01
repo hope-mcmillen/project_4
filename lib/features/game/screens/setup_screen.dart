@@ -210,7 +210,7 @@ class _SetupScreenState extends State<SetupScreen> {
               padding: const EdgeInsets.only(bottom: 12),
               child: Semantics(
                 liveRegion: true,
-                child: Text('Selected topic: ${_topic!.name}'),
+                child: TopicBanner(title: 'Selected topic: ${_topic!.name}'),
               ),
             ),
           for (final topic in _topics)
@@ -221,7 +221,7 @@ class _SetupScreenState extends State<SetupScreen> {
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
                     backgroundColor: _topic?.id == topic.id
-                        ? AppColors.sage
+                        ? AppColors.mint
                         : AppColors.card,
                     padding: const EdgeInsets.all(18),
                   ),

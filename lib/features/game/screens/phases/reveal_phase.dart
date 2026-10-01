@@ -24,6 +24,7 @@ class RevealPhase extends StatelessWidget {
     final chameleon = view.ownRole == PlayerRole.chameleon;
     return PageBody(
       children: [
+        TopicBanner(title: view.topic.name),
         if (!chameleon) ...[
           Eyebrow('${view.turnPlayer} • Keep this secret'),
           Text(

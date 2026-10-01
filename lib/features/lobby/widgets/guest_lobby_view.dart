@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../game/widgets/game_widgets.dart';
 import '../logic/join_room_controller.dart';
 import 'lobby_widgets.dart';
+import 'room_code_badge.dart';
 
 /// What a guest sees after joining: the room, who is in it, and a wait
 /// until the host starts.
@@ -20,7 +21,10 @@ class GuestLobbyView extends StatelessWidget {
 
     return PageBody(
       children: [
-        Eyebrow('Room ${room.code}'),
+        Align(
+          alignment: Alignment.topRight,
+          child: RoomCodeBadge(code: room.code),
+        ),
         Text(
           'You’re in, ${guest.me!.name}!',
           style: Theme.of(context).textTheme.headlineMedium,

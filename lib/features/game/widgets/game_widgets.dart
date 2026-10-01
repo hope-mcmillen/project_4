@@ -65,6 +65,52 @@ class InfoCard extends StatelessWidget {
   );
 }
 
+/// A consistent focal area for categories and private clue words.
+class TopicBanner extends StatelessWidget {
+  const TopicBanner({
+    super.key,
+    required this.title,
+    this.label = 'TOPIC',
+    this.chameleon = false,
+  });
+  final String title;
+  final String label;
+  final bool chameleon;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    margin: const EdgeInsets.symmetric(vertical: 16),
+    padding: const EdgeInsets.all(24),
+    decoration: BoxDecoration(
+      color: AppColors.mint,
+      border: Border.all(color: AppColors.teal, width: 2),
+      borderRadius: BorderRadius.circular(24),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (chameleon) const Center(child: ChameleonMascot()),
+        Text(
+          label,
+          style: const TextStyle(
+            color: AppColors.deepTeal,
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.5,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          title,
+          style: Theme.of(context).textTheme.headlineMedium
+              ?.copyWith(color: AppColors.deepTeal),
+        ),
+      ],
+    ),
+  );
+}
+
 class TopicBoard extends StatelessWidget {
   const TopicBoard({
     super.key,
@@ -81,7 +127,7 @@ class TopicBoard extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Eyebrow(topic.name),
+        TopicBanner(title: topic.name.toUpperCase()),
         const SizedBox(height: 4),
         LayoutBuilder(
           builder: (context, constraints) {

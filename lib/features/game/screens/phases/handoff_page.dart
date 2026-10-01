@@ -21,6 +21,7 @@ class HandoffPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => PageBody(
     children: [
+      TopicBanner(title: view.topic.name),
       Eyebrow(
         '${voting
             ? 'Private vote'
@@ -32,7 +33,7 @@ class HandoffPage extends StatelessWidget {
       const SizedBox(height: 8),
       Text(view.turnPlayer, style: Theme.of(context).textTheme.displaySmall),
       const InfoCard(
-        color: AppColors.sage,
+        color: AppColors.mint,
         child: Column(
           children: [
             Icon(Icons.lock_outline_rounded, size: 64, color: AppColors.ink),

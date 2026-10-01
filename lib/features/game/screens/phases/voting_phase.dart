@@ -33,6 +33,7 @@ class _VotingPhaseState extends State<VotingPhase> {
     }
     return PageBody(
       children: [
+        TopicBanner(title: view.topic.name),
         Eyebrow('${view.turnPlayer} • Private ballot'),
         Text(
           'Who’s the\nChameleon?',
@@ -52,7 +53,7 @@ class _VotingPhaseState extends State<VotingPhase> {
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
                     backgroundColor: _suspect == i
-                        ? AppColors.sage
+                        ? AppColors.mint
                         : AppColors.card,
                   ),
                   onPressed: () => setState(() => _suspect = i),

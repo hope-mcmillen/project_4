@@ -5,6 +5,24 @@ class SupabaseOnlineRepository {
 
   final SupabaseClient client;
 
+  RealtimeChannel? watch(String id, void Function() onChange) {
+    final channel = client.channel('online:$id');
+    for (final table in ['online_rooms', 'online_members']) {
+      channel.onPostgresChanges(
+        event: PostgresChangeEvent.all,
+        schema: 'public',
+        table: table,
+        filter: PostgresChangeFilter(
+          type: PostgresChangeFilterType.eq,
+          column: table == 'online_rooms' ? 'id' : 'room_id',
+          value: id,
+        ),
+        callback: (_) => onChange(),
+      );
+    }
+    return channel..subscribe();
+  }
+
   String get userId => client.auth.currentUser!.id;
 
   Future<void> signIn() async {
@@ -54,6 +72,10 @@ class SupabaseOnlineRepository {
       _call('online_submit_clue', {'p_room': id, 'p_clue': value});
   Future<void> startVoting(String id) =>
       _call('online_start_voting', {'p_room': id});
+  Future<void> anotherRound(String id, int round) => _call(
+    'online_another_clue_round',
+    {'p_room': id, 'p_expected_round': round},
+  );
   Future<void> vote(String id, String suspect) =>
       _call('online_cast_vote', {'p_room': id, 'p_suspect': suspect});
   Future<void> guess(String id, String word) =>

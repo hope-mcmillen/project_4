@@ -29,12 +29,10 @@ class CluesPhase extends StatelessWidget {
             const Text(
               'Say your clue out loud. Make it convincing, but don’t make the secret too obvious.',
             ),
-            InfoCard(
-              child: Text(
-                view.roleWord ?? view.topic.name,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
+            TopicBanner(
+              title: view.roleWord ?? view.topic.name,
+              label: view.roleWord == null ? 'TOPIC' : 'SECRET WORD',
+              chameleon: view.ownRole == PlayerRole.chameleon,
             ),
             FilledButton(
               onPressed: onNext,
