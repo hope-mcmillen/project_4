@@ -8,7 +8,7 @@
 PRODUCT_NAME = project_4
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = io.github.hopemcmillen.chameleon
+PRODUCT_BUNDLE_IDENTIFIER = com.example.project4
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 io.github.hopemcmillen. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.
