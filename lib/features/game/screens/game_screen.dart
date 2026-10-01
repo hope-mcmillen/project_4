@@ -127,12 +127,14 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       GamePhase.clues => CluesPhase(
         key: key,
         view: view,
+        onOpen: _game.openPrivateView,
         onNext: _game.finishClue,
       ),
       GamePhase.discussion => DiscussionPhase(
         key: key,
         view: view,
         onReadyToVote: _game.startVoting,
+        onAnotherRound: _game.startAnotherClueRound,
       ),
       GamePhase.voting => VotingPhase(
         key: key,

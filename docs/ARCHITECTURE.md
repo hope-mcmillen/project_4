@@ -34,7 +34,7 @@ With the fake backend, rooms exist only in one app's memory, so hosting and join
 
 ## Extend without tangling features
 
-- **Content:** Add a `TopicPack` in `data/topic_packs.dart`; use distinct, nonempty words. Existing boards use 12 words for phone readability.
+- **Content:** Add a `TopicPack` in `data/topic_packs.dart` with exactly 12 distinct, nonempty words. `word_repository_test.dart` checks every pack. Setup loads the catalog through `WordRepository.getTopics()`; `LocalWordRepository` supplies the const offline list. CHM-2 supplies `RemoteWordRepository`, selected by build-time Supabase configuration and shared through the app and home screen. Its in-memory cache lasts ten minutes, coalesces simultaneous loads, and retains the last valid catalog (or the local catalog) on failure. See `SUPABASE.md` for the schema and lifecycle. Topic previews display the complete board and require an explicit choice before changing the selection. Secret-word selection still happens only when starting a round.
 - **Appearance:** Put shared changes in `app/theme.dart` and `widgets/game_widgets.dart`.
 - **Rules/scoring:** Change controller actions, then add outcome tests. Keep scoring in a separate session model if it spans rounds.
 - **Persistence:** Add a repository abstraction and an explicit resume policy. Do not persist private roles accidentally in plain logs.

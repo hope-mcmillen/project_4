@@ -10,23 +10,29 @@ class HandoffPage extends StatelessWidget {
     super.key,
     required this.view,
     required this.voting,
+    this.clues = false,
     required this.onOpen,
   });
   final PlayerView view;
   final bool voting;
+  final bool clues;
   final VoidCallback onOpen;
 
   @override
   Widget build(BuildContext context) => PageBody(
     children: [
       Eyebrow(
-        '${voting ? 'Private vote' : 'Secret roles'} • ${view.turn + 1} of ${view.players.length}',
+        '${voting
+            ? 'Private vote'
+            : clues
+            ? 'Clue round'
+            : 'Secret roles'} • ${view.turn + 1} of ${view.players.length}',
       ),
       Text('Pass the phone to', style: Theme.of(context).textTheme.titleLarge),
       const SizedBox(height: 8),
       Text(view.turnPlayer, style: Theme.of(context).textTheme.displaySmall),
       const InfoCard(
-        color: AppColors.lime,
+        color: AppColors.sage,
         child: Column(
           children: [
             Icon(Icons.lock_outline_rounded, size: 64, color: AppColors.ink),
@@ -46,7 +52,13 @@ class HandoffPage extends StatelessWidget {
       FilledButton.icon(
         onPressed: onOpen,
         icon: const Icon(Icons.visibility_outlined),
-        label: Text(voting ? 'Open my ballot' : 'Reveal my role'),
+        label: Text(
+          voting
+              ? 'Open my ballot'
+              : clues
+              ? 'View my clue screen'
+              : 'Reveal my role',
+        ),
       ),
     ],
   );

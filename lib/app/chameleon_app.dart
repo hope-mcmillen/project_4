@@ -4,7 +4,21 @@ import '../features/game/screens/home_screen.dart';
 import '../features/lobby/logic/fake_room_repository.dart';
 import '../features/lobby/logic/room_repository.dart';
 import 'theme.dart';
+import 'word_repository_config.dart';
+import '../features/game/data/word_repository.dart';
 
+class ChameleonApp extends StatefulWidget {
+  const ChameleonApp({super.key, this.wordRepository});
+  final WordRepository? wordRepository;
+
+  @override
+  State<ChameleonApp> createState() => _ChameleonAppState();
+}
+
+class _ChameleonAppState extends State<ChameleonApp> {
+  // One repository per app session: opening setup again reuses its cache.
+  late final WordRepository _words =
+      widget.wordRepository ?? createWordRepository();
 class ChameleonApp extends StatefulWidget {
   const ChameleonApp({super.key, this.rooms});
 
@@ -21,6 +35,8 @@ class _ChameleonAppState extends State<ChameleonApp> {
 
   RoomRepository get _rooms =>
       widget.rooms ?? (_ownRooms ??= FakeRoomRepository());
+
+  late final WordRepository _words = widget.wordRepository ?? createWordRepository();
 
   @override
   void dispose() {

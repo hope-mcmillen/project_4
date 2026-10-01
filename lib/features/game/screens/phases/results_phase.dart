@@ -29,7 +29,7 @@ class ResultsPhase extends StatelessWidget {
       const SizedBox(height: 12),
       Text(view.resultReason!),
       InfoCard(
-        color: AppColors.lime,
+        color: AppColors.sage,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

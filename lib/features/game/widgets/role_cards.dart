@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/theme.dart';
+import 'game_widgets.dart';
 
 /// Takes no word by design: the Chameleon's card cannot display the secret.
 class ChameleonCard extends StatelessWidget {
@@ -15,26 +16,20 @@ class ChameleonCard extends StatelessWidget {
       gradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [Color(0xFF273B31), Color(0xFF141E19)],
+        colors: [AppColors.ink, AppColors.forest],
       ),
       borderRadius: BorderRadius.circular(28),
-      border: Border.all(
-        color: AppColors.lime.withValues(alpha: 0.35),
-      ),
+      border: Border.all(color: AppColors.sage.withValues(alpha: 0.35)),
     ),
     child: Column(
       children: [
-        const Icon(
-          Icons.visibility_off_outlined,
-          size: 64,
-          color: AppColors.lime,
-        ),
+        const ChameleonMascot(),
         const SizedBox(height: 24),
         Text(
           'You are the chameleon, try and stay hidden among the other players',
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.headlineMedium
-              ?.copyWith(color: Colors.white),
+              ?.copyWith(color: AppColors.card),
         ),
       ],
     ),
@@ -79,7 +74,7 @@ class _SecretCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = undercover ? AppColors.lime : const Color(0xFFD8CCFF);
+    final accent = undercover ? AppColors.sage : AppColors.mint;
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.symmetric(vertical: 24),
@@ -89,8 +84,8 @@ class _SecretCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: undercover
-              ? const [Color(0xFF273B31), Color(0xFF141E19)]
-              : const [Color(0xFF382655), Color(0xFF181522)],
+              ? const [AppColors.ink, AppColors.forest]
+              : const [AppColors.teal, AppColors.deepTeal],
         ),
         borderRadius: BorderRadius.circular(28),
         border: Border.all(color: accent.withValues(alpha: 0.35)),
@@ -122,13 +117,13 @@ class _SecretCard extends StatelessWidget {
             focus,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineMedium
-                ?.copyWith(color: Colors.white, fontSize: 36),
+                ?.copyWith(color: AppColors.card, fontSize: 36),
           ),
           const SizedBox(height: 8),
           Text(
             caption,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Color(0xFFD0D2D6)),
+            style: const TextStyle(color: AppColors.paper),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 24),
@@ -147,7 +142,7 @@ class _SecretCard extends StatelessWidget {
           Text(
             instruction,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Color(0xFFD0D2D6), height: 1.5),
+            style: const TextStyle(color: AppColors.paper, height: 1.5),
           ),
         ],
       ),
