@@ -59,11 +59,15 @@ class GameController extends ChangeNotifier {
       ? players[_chameleonIndex]
       : null;
   String? get roleWord =>
-      _phase == GamePhase.reveal && _privateOpen && _turn != _chameleonIndex
+      (_phase == GamePhase.reveal || _phase == GamePhase.clues) &&
+          _privateOpen &&
+          _turn != _chameleonIndex
       ? _secretWord
       : null;
   bool get isRevealedChameleon =>
-      _phase == GamePhase.reveal && _privateOpen && _turn == _chameleonIndex;
+      (_phase == GamePhase.reveal || _phase == GamePhase.clues) &&
+      _privateOpen &&
+      _turn == _chameleonIndex;
   Map<int, int> get voteCounts {
     if (_phase != GamePhase.result) return const {};
     return Map.unmodifiable(_tally());
@@ -76,7 +80,9 @@ class GameController extends ChangeNotifier {
   }
 
   void openPrivateView() {
-    if (_phase != GamePhase.reveal && _phase != GamePhase.voting) {
+    if (_phase != GamePhase.reveal &&
+        _phase != GamePhase.clues &&
+        _phase != GamePhase.voting) {
       throw StateError('No private view in this phase.');
     }
     _privateOpen = true;
@@ -103,11 +109,21 @@ class GameController extends ChangeNotifier {
 
   void finishClue() {
     _require(GamePhase.clues);
+    if (!_privateOpen) throw StateError('Open your clue screen first.');
+    _privateOpen = false;
     _turn++;
     if (_turn == players.length) {
       _turn = 0;
       _phase = GamePhase.discussion;
     }
+    notifyListeners();
+  }
+
+  void startAnotherClueRound() {
+    _require(GamePhase.discussion);
+    _turn = 0;
+    _privateOpen = false;
+    _phase = GamePhase.clues;
     notifyListeners();
   }
 

@@ -72,8 +72,10 @@ void main() {
       expect(find.text('Hide & continue'), findsNothing);
     }
     for (var i = 0; i < 3; i++) {
+      await tapText(tester, 'View my clue screen');
       await tapText(tester, 'Clue given · Next player');
     }
+    await tapText(tester, 'View my clue screen');
     await tapText(tester, 'Clue given · Discuss');
     await tapText(tester, 'Ready to vote');
     for (final suspect in ['Player 2', 'Player 1', 'Player 2', 'Player 1']) {

@@ -18,6 +18,7 @@ void goToVoting(GameController game) {
     game.finishReveal();
   }
   for (var i = 0; i < game.players.length; i++) {
+    game.openPrivateView();
     game.finishClue();
   }
   game.startVoting();
