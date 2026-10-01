@@ -90,7 +90,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                 ChoiceChip(
                   label: Text(topic.name),
                   selected: _topicId == topic.id,
-                  selectedColor: AppColors.lime,
+                  selectedColor: AppColors.teal,
                   onSelected: creating
                       ? null
                       : (_) => setState(() => _topicId = topic.id),

@@ -16,6 +16,7 @@ void main() {
     await tester.tap(find.text('Host online'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextFormField), 'Alex');
+    await tester.ensureVisible(find.text('Create room'));
     await tester.tap(find.text('Create room'));
     await tester.pumpAndSettle();
 

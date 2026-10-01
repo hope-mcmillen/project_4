@@ -4,18 +4,19 @@ import '../../../app/theme.dart';
 import '../../lobby/logic/room_repository.dart';
 import '../../lobby/screens/create_room_screen.dart';
 import '../../lobby/screens/join_room_screen.dart';
-import '../../lobby/online_screen.dart';
-import '../widgets/game_widgets.dart';
-import '../data/word_repository.dart';
 import '../data/local_word_repository.dart';
+import '../data/word_repository.dart';
+import '../widgets/game_widgets.dart';
 import 'setup_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
     super.key,
+    required this.rooms,
     this.wordRepository = const LocalWordRepository(),
   });
   final WordRepository wordRepository;
+  final RoomRepository rooms;
 
   @override
   Widget build(BuildContext context) => Scaffold(

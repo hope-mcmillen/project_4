@@ -32,7 +32,7 @@ class HostLobbyView extends StatelessWidget {
       children: [
         const Eyebrow('Your room code'),
         InfoCard(
-          color: AppColors.lime,
+          color: AppColors.teal,
           child: Row(
             children: [
               Expanded(

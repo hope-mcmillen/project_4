@@ -49,7 +49,7 @@ class RoundStartedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const InfoCard(
-    color: AppColors.purple,
+    color: AppColors.deepTeal,
     child: Text(
       'Round started! Online roles are on their way; for now, '
       'everyone keeps the room open.',
