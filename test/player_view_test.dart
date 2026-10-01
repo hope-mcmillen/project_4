@@ -52,6 +52,7 @@ void main() {
     expect(game.view.phase, GamePhase.clues);
     expectNoSecret(game.view);
     for (var i = 0; i < 4; i++) {
+      game.openPrivateView();
       game.finishClue();
     }
     expect(game.view.phase, GamePhase.discussion);
@@ -102,6 +103,7 @@ void main() {
       game.finishReveal();
     }
     for (var i = 0; i < 4; i++) {
+      game.openPrivateView();
       game.finishClue();
     }
     game.startVoting();

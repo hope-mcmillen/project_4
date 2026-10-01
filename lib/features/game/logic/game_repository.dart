@@ -13,6 +13,7 @@ abstract interface class GameRepository implements Listenable {
   void hidePrivateView();
   void finishReveal();
   void finishClue();
+  void startAnotherClueRound();
   void startVoting();
   void castVote(int suspect);
   void guessWord(String word);

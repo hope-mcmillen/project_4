@@ -1,18 +1,40 @@
 import 'package:flutter/material.dart';
 
 abstract final class AppColors {
-  static const ink = Color(0xFF242527);
-  static const paper = Color(0xFFF7F7EF);
-  static const purple = Color(0xFF6250B5);
-  static const lime = Color(0xFFD7EF81);
-  static const muted = Color(0xFF63655C);
+  static const ink = Color(0xFF3B8719);
+  static const paper = Color(0xFFE6EBC6);
+  static const teal = Color(0xFF3E9B99);
+  static const sage = Color(0xFFD2E4B9);
+  static const muted = Color(0xFF506B43);
+  static const card = Color(0xFFF5F7E9);
+  static const mint = Color(0xFFC5E5DA);
+  static const forest = Color(0xFF214B22);
+  static const deepTeal = Color(0xFF174B49);
+  static const outline = Color(0xFF9DB88B);
 }
 
 ThemeData buildTheme() {
-  final scheme = ColorScheme.fromSeed(
-    seedColor: AppColors.purple,
-    surface: AppColors.paper,
-  );
+  final scheme =
+      ColorScheme.fromSeed(
+        seedColor: AppColors.teal,
+        surface: AppColors.paper,
+      ).copyWith(
+        primary: AppColors.ink,
+        onPrimary: AppColors.card,
+        primaryContainer: AppColors.sage,
+        onPrimaryContainer: AppColors.forest,
+        secondary: AppColors.teal,
+        onSecondary: AppColors.deepTeal,
+        secondaryContainer: AppColors.mint,
+        onSecondaryContainer: AppColors.deepTeal,
+        tertiary: AppColors.teal,
+        onSurface: AppColors.ink,
+        onSurfaceVariant: AppColors.muted,
+        surfaceContainerHighest: AppColors.sage,
+        outline: AppColors.outline,
+        outlineVariant: AppColors.sage,
+        surfaceTint: Colors.transparent,
+      );
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
@@ -44,12 +66,21 @@ ThemeData buildTheme() {
         color: AppColors.ink,
       ),
       bodyLarge: TextStyle(fontSize: 16, height: 1.5, color: AppColors.ink),
-      bodyMedium: TextStyle(fontSize: 14, height: 1.5, color: AppColors.muted),
+      bodyMedium: TextStyle(fontSize: 14, height: 1.5, color: AppColors.ink),
+    ).apply(bodyColor: AppColors.ink, displayColor: AppColors.ink),
+    iconTheme: const IconThemeData(color: AppColors.ink),
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: AppColors.paper,
+      surfaceTintColor: Colors.transparent,
+    ),
+    dialogTheme: const DialogThemeData(
+      backgroundColor: AppColors.paper,
+      surfaceTintColor: Colors.transparent,
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         backgroundColor: AppColors.ink,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.card,
         minimumSize: const Size(double.infinity, 56),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
@@ -65,7 +96,7 @@ ThemeData buildTheme() {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: Colors.white,
+      fillColor: AppColors.card,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     ),

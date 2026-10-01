@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/theme.dart';
-import '../widgets/game_widgets.dart';
-import '../data/word_repository.dart';
+import '../../lobby/logic/room_repository.dart';
+import '../../lobby/screens/create_room_screen.dart';
+import '../../lobby/screens/join_room_screen.dart';
 import '../data/local_word_repository.dart';
+import '../data/word_repository.dart';
+import '../widgets/game_widgets.dart';
 import 'setup_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
     super.key,
+    required this.rooms,
     this.wordRepository = const LocalWordRepository(),
   });
   final WordRepository wordRepository;
+  final RoomRepository rooms;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -19,7 +24,7 @@ class HomeScreen extends StatelessWidget {
       title: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.blur_on_rounded, color: AppColors.purple),
+          Icon(Icons.blur_on_rounded, color: AppColors.teal),
           SizedBox(width: 8),
           Text(
             'chameleon',
@@ -33,7 +38,7 @@ class HomeScreen extends StatelessWidget {
         const SizedBox(height: 16),
         const Eyebrow('A little suspicious. A lot of fun.'),
         Text(
-          'Blend in.\nStand out.\nDon’t get caught.',
+          'Blend in.\nDon’t get caught.',
           style: Theme.of(context).textTheme.displaySmall,
         ),
         const SizedBox(height: 16),
@@ -42,16 +47,16 @@ class HomeScreen extends StatelessWidget {
           style: TextStyle(fontSize: 16, height: 1.5, color: AppColors.muted),
         ),
         const InfoCard(
-          color: AppColors.purple,
+          color: AppColors.teal,
           child: Column(
             children: [
               ChameleonMascot(),
               SizedBox(height: 12),
               Text(
-                'TRUST NO ONE. INCLUDING YOUR BESTIE.',
+                'TRUST NO ONE. FIND THE CHAMELEON',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.card,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.1,
@@ -78,6 +83,26 @@ class HomeScreen extends StatelessWidget {
           ),
           icon: const Icon(Icons.arrow_forward_rounded),
           label: const Text('Start a game'),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => CreateRoomScreen(rooms: rooms),
+            ),
+          ),
+          icon: const Icon(Icons.wifi_tethering_rounded),
+          label: const Text('Host online'),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => JoinRoomScreen(rooms: rooms),
+            ),
+          ),
+          icon: const Icon(Icons.login_rounded),
+          label: const Text('Join online'),
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(
@@ -165,7 +190,7 @@ class RulesScreen extends StatelessWidget {
             ),
           ),
         const InfoCard(
-          color: AppColors.lime,
+          color: AppColors.sage,
           child: Text(
             'Starter house rules: a tied vote or an incorrect accusation lets the Chameleon win. Play again with the same crew to keep a running score: a group win gives every other player 1 point, a Chameleon win gives the Chameleon 2.',
           ),
