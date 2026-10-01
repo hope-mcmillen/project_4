@@ -52,8 +52,8 @@ class _VotingPhaseState extends State<VotingPhase> {
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
                     backgroundColor: _suspect == i
-                        ? AppColors.lime
-                        : Colors.white,
+                        ? AppColors.sage
+                        : AppColors.card,
                   ),
                   onPressed: () => setState(() => _suspect = i),
                   child: Row(

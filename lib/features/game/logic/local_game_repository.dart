@@ -53,6 +53,9 @@ class LocalGameRepository implements GameRepository {
   void finishClue() => _game.finishClue();
 
   @override
+  void startAnotherClueRound() => _game.startAnotherClueRound();
+
+  @override
   void startVoting() => _game.startVoting();
 
   @override

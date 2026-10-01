@@ -46,3 +46,11 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Local Supabase project configuration (public client credentials only).
+/config/supabase.json
+
+# Generated backend dependencies and emulator files.
+functions/node_modules/
+functions/lib/
+.firebase/
