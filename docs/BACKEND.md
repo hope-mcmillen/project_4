@@ -1,83 +1,77 @@
 # Backend decision (CHM-S1)
 
-**What the team built: Supabase for topic words, Firebase for online rooms.**
+**Supabase is the app's backend: topic words and online play.**
 
 | Concern | Backend | Built in | Setup |
 |---|---|---|---|
-| Topic packs and words (CHM-1/2) | Supabase (Postgres + Data API) | PR #3 | [SUPABASE.md](SUPABASE.md) |
-| Online rooms, players, lobby (CHM-3/4, stage 1) | Firebase: anonymous Auth, Firestore, Cloud Functions | PR #8, #9 | [ONLINE_LOBBY.md](ONLINE_LOBBY.md) |
+| Topic packs and words (CHM-1/2) | Supabase | PR #3 | [SUPABASE.md](SUPABASE.md) |
+| Online rooms, roles, clues, votes, results | Supabase: anonymous Auth, Postgres with RLS, server functions, Realtime | PR #10 | [ONLINE_LOBBY.md](ONLINE_LOBBY.md) |
 
-This page records why, what it costs, and how the next online stage
-(CHM-11/12) keeps each player's secret. Recorded 2026-10-01, after both were
-merged. An earlier draft of this PR proposed Supabase for rooms too; the team
-built rooms on Firebase instead, and this version describes what exists.
+Updated 2026-10-01 after #10. Earlier versions of this page said rooms would run
+on Firebase, which matched what was on `master` at the time (#8). Online play
+now goes through Supabase: the home screen's **Host online** / **Join online**
+open `SupabaseOnlineScreen` when a Supabase client is configured (`lib/main.dart`).
+Without that configuration the online buttons are hidden and the home screen
+says online play isn't set up. The in-memory `RoomRepository` rooms from #9 are
+only passed in by tests; the app itself never uses them.
 
-Still open: confirm with the instructor that online play and hosted backends
+Still open: confirm with the instructor that online play and a hosted backend
 are in scope.
 
-## Why two backends
+## Why Supabase
 
-The two were chosen in parallel for different jobs, and both fit:
+- One backend for words and rooms: one project, one set of keys, one thing to
+  keep alive before a demo.
+- Postgres row-level security lets the database, not the app, decide what each
+  phone can read, which is what keeps the secret word off the Chameleon's phone.
+- Anonymous sign-in gives each phone an identity without accounts.
+- Realtime pushes room and player changes, so every phone advances together.
 
-- **Words are public, read-only content.** Supabase serves them through its
-  Data API with plain `http`, and the app falls back to bundled topics when
-  offline, so a Supabase outage never blocks a game.
-- **Rooms need identity, live updates and server-side rules.** Firebase gives
-  anonymous sign-in, Firestore listeners, security rules and callable
-  functions in one place, and `firebase_room_repository.dart` uses all four.
+## How the secret stays secret
 
-**Cost of the split:** two consoles, two sets of config, two things to keep
-alive before a demo. Moving topic packs into Firestore later would remove one,
-but is not needed for the course.
+The design in `supabase/migrations/202610010001_online_game.sql` is the
+reference for any future online feature:
 
-## How rooms stay secure today
+- **The secret word and the Chameleon's identity live in their own table,
+  `online_secrets`, which no client can read.** All table grants are revoked,
+  it has no select policy, and it is **not** published to Realtime.
+- A player learns their own role only through `online_my_role(room)`, a
+  `security definer` function that returns the word to everyone except the
+  Chameleon.
+- Every action (`online_create_room`, `online_join_room`, `online_start_round`,
+  `online_submit_clue`, `online_cast_vote`, `online_guess_word`, …) is a
+  `security definer` function that
+  validates the caller. Clients never write tables directly.
+- Only `online_rooms` and `online_members` are published to Realtime, and
+  clients can read them only for rooms they belong to.
 
-- Every write goes through a callable Cloud Function (`createRoom`,
-  `joinRoom`, `setReady`, `setTopic`, `leaveRoom`, …). Clients cannot write
-  Firestore directly: `firestore.rules` denies `create`, `update`, `delete`
-  and `list` everywhere.
-- A client may `get` a room document only if it is signed in, its `uid` is in
-  the room's `players`, and the room has not expired.
+**Keep it that way.** Never add `online_secrets` (or `online_votes`) to the
+Realtime publication: Supabase's docs say "RLS policies are not applied to
+`DELETE` statements" for Realtime, so a published secrets table could broadcast
+rows when a room is deleted. And never put the word or roles in `online_rooms`,
+which every member can read.
 
-## Keeping the secret word off the Chameleon's phone (CHM-11)
+## Firebase
 
-The room document is readable by **every** player in the room. So:
+`master` still contains a Firebase lobby (#8): `lib/features/lobby/online_screen.dart`,
+`firebase_room_repository.dart`, `firebase_options.dart`, `functions/`,
+`firestore.rules`, and the Android `google-services` plugin with
+`android/app/google-services.json`. **Nothing in the app opens that lobby any
+more.** The plugin is still part of every Android build, which is why renaming
+the app ID broke the build on 2026-10-01 (#6, fixed in #11).
 
-- **Never put roles or the secret word in the room document**, or in any
-  document all players can read. A field that "the app doesn't show" is still
-  delivered to every phone, readable by anyone with a debugger.
-- Give each player their own role document, for example
-  `rooms/{roomId}/roles/{uid}`, with a rule like
-  `allow get: if request.auth != null && request.auth.uid == uid;`.
-  The Chameleon's document has no word, only the flag.
-- **Assign roles in a Cloud Function**, never on the host's phone: the
-  function picks the Chameleon and the word and writes the role documents.
-- Votes go through a function too (reject self-votes and second votes); the
-  function tallies and writes only the public result (counts, accused, secret
-  word) into the room document **after** voting closes.
-- Test the rule with the Firestore emulator: a player reading another
-  player's role document must be denied. This is the one rule where a mistake
-  ends the game.
-
-`docs/ARCHITECTURE.md` already says the online `GameRepository` must send each
-device only its own `PlayerView`; the role documents above are how Firestore
-enforces that.
+Removing the unused Firebase code and plugin, or wiring the lobby back in, is a
+team decision. Until then, the Android application ID must stay
+`com.example.project_4`, the ID `google-services.json` is registered to.
 
 ## Before a demo or submission
 
-- **Cloud Functions need the Blaze plan to deploy** (Firebase: "to deploy
-  functions, your project must be on the Blaze pricing plan"). Without a
-  deployed backend, online play only works against the local emulators.
-  `ONLINE_LOBBY.md` covers both routes. Decide which one the demo uses well
-  before the day.
 - **Supabase free projects pause after a week of inactivity**
-  (supabase.com/pricing). Offline fallback keeps the game playable, but the
-  remote topics would be missing. Open the Supabase dashboard in the days
-  before a demo.
-- Never ship a Supabase service-role key or Firebase admin credentials in
-  the app. The Supabase publishable key and the Firebase client config are
-  designed to be public; security comes from RLS and Firestore rules.
-
-Sources read 2026-09-29 and 2026-10-01: supabase.com/pricing,
-firebase.google.com/docs/functions/get-started, and the repository's own
-`firestore.rules`, `functions/src/index.ts` and lobby code.
+  (supabase.com/pricing, read 2026-09-29). A paused project means no online
+  play and no remote topics (offline play still works with the bundled
+  topics). Open the dashboard or play an online round in the days before.
+- Anonymous sign-in is rate-limited per IP (30 per hour by default, per
+  Supabase's auth docs). Phones on one Wi-Fi share an IP; fine for a demo, but
+  repeated reinstalls during testing can hit it.
+- Never ship the Supabase service-role key. The publishable key is designed to
+  be public; security comes from RLS and the functions above.
