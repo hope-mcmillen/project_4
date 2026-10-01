@@ -32,7 +32,13 @@ The cloned project folder is `chameleon`. The Dart package is still named `proje
 - A running score while the same crew replays, shown on each result; it resets when you leave the round.
 - An exit confirmation that preserves player setup when leaving a round.
 
-This is **offline pass-and-play on one device**. No accounts, room codes, network multiplayer, or saved games are implemented. An optional Supabase connection supplies topic content; rounds still run locally. Closing or restarting the app clears the round. Keep the phone private during reveals; this starter does not block screenshots or screen recording.
+**Start a game** is offline pass-and-play on one device. **Host online** and
+**Join online** use the team's Supabase project for separate devices: the host
+creates a six-character room code, each player joins with that code, and the
+server controls roles and round progress. See [online play](docs/ONLINE_LOBBY.md)
+for setup and troubleshooting. Closing or restarting an offline round clears it.
+Keep the phone private during reveals; the app does not block screenshots or
+screen recording.
 
 ## Starter rules
 

@@ -40,3 +40,17 @@ least three independent devices or browser profiles. Check that a nonmember
 cannot read room data, a Chameleon cannot fetch the secret word, and a player
 cannot vote twice. The older Firebase lobby prototype remains in the tree for
 reference but is not used by the configured Host/Join buttons.
+
+## If a room code is not found
+
+- Keep the host on the **Online game** screen and use **Copy room code** to
+  share the exact six characters. A room expires six hours after creation;
+  leaving a lobby removes that player's seat and removes the room if empty.
+- Run the same current build on both the host app and browser clients. A
+  host screen titled **Host a room** is the older Firebase prototype, whose
+  room codes cannot be joined by the Supabase **Join online** screen. The
+  Supabase host screen is titled **Online game** once the room is created.
+- Check that both builds use the same `SUPABASE_URL`. Without a build-time
+  override, the current app uses the team's Supabase project. On two browser
+  clients, use separate browser profiles, because tabs in one profile share a
+  player identity.
