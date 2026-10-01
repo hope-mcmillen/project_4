@@ -26,7 +26,11 @@ Future<void> tapText(WidgetTester tester, String label) async {
 ///
 /// Roles are random in the app, so the test learns them the way a player
 /// would: by looking at each private reveal.
-Future<String> playRound(WidgetTester tester, {required bool groupWins}) async {
+Future<String> playRound(
+  WidgetTester tester, {
+  required bool groupWins,
+  int extraClueLaps = 0,
+}) async {
   String? chameleon;
   String? secret;
   for (final name in crew) {
@@ -41,11 +45,25 @@ Future<String> playRound(WidgetTester tester, {required bool groupWins}) async {
     }
     await tapText(tester, 'Hide & continue');
   }
-  for (var i = 0; i < crew.length - 1; i++) {
-    expect(find.text(scoreHeading), findsNothing);
-    await tapText(tester, 'Clue given · Next player');
+  // Since the UI rewrite each player opens a clue screen before giving a clue.
+  // "Another Round" starts one more lap with the same roles; it must not score.
+  for (var lap = 0; lap <= extraClueLaps; lap++) {
+    if (lap > 0) {
+      expect(find.text(scoreHeading), findsNothing);
+      await tapText(tester, 'Another Round');
+    }
+    for (var i = 0; i < crew.length; i++) {
+      expect(find.text(scoreHeading), findsNothing);
+      await tapText(tester, 'View my clue screen');
+      expect(find.text(scoreHeading), findsNothing);
+      await tapText(
+        tester,
+        i == crew.length - 1
+            ? 'Clue given · Discuss'
+            : 'Clue given · Next player',
+      );
+    }
   }
-  await tapText(tester, 'Clue given · Discuss');
   expect(find.text(scoreHeading), findsNothing);
   await tapText(tester, 'Ready to vote');
 
@@ -136,6 +154,8 @@ class _RepeatingRound extends ChangeNotifier implements GameRepository {
   @override
   void finishClue() {}
   @override
+  void startAnotherClueRound() {}
+  @override
   void startVoting() {}
   @override
   void castVote(int suspect) {}
@@ -165,7 +185,8 @@ void main() {
       // Round 2, same crew: the group wins. Replay must neither drop round 1
       // nor count it a second time.
       await tapText(tester, 'Play again · Same crew');
-      final second = await playRound(tester, groupWins: true);
+      // It also takes an extra clue lap, which must not count as a round.
+      final second = await playRound(tester, groupWins: true, extraClueLaps: 1);
       for (final name in crew) {
         if (name != second) expected[name] = expected[name]! + 1;
       }

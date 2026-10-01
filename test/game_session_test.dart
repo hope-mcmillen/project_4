@@ -6,6 +6,7 @@ import 'package:project_4/features/game/logic/game_controller.dart';
 import 'package:project_4/features/game/logic/game_repository.dart';
 import 'package:project_4/features/game/logic/game_session.dart';
 import 'package:project_4/features/game/logic/local_game_repository.dart';
+import 'package:project_4/features/game/models/game_phase.dart';
 import 'package:project_4/features/game/models/player_view.dart';
 
 const crew = ['Alex', 'Blair', 'Casey', 'Drew'];
@@ -34,26 +35,51 @@ GameRepository newRound({List<String> players = crew}) => LocalGameRepository(
   ),
 );
 
-/// Plays a round through the same repository actions the UI calls, and, like
-/// GameScreen's listener, offers the round to the session after every action.
-/// That is the production path: the session sees every intermediate state.
+/// Offers [round] to [session] after every action, as GameScreen's listener
+/// does in production, so the session sees every intermediate state.
+void Function(void Function()) actor(
+  GameSession session,
+  GameRepository round,
+) => (action) {
+  action();
+  session.recordRound(round);
+};
+
+/// Every player opens their role, then hides it (the reveal lap).
+void revealRoles(GameSession session, GameRepository round) {
+  final act = actor(session, round);
+  for (var i = 0; i < crew.length; i++) {
+    act(round.openPrivateView);
+    act(round.finishReveal);
+  }
+}
+
+/// One lap of clues. Since the UI rewrite each player must open their clue
+/// screen before giving a clue; finishClue throws StateError otherwise.
+void clueLap(GameSession session, GameRepository round) {
+  final act = actor(session, round);
+  for (var i = 0; i < crew.length; i++) {
+    act(round.openPrivateView);
+    act(round.finishClue);
+  }
+}
+
+/// Plays a round through the same repository actions the UI calls.
+/// [extraClueLaps] is how many times the group presses "Another Round" in
+/// the discussion before voting.
 void play(
   GameSession session,
   GameRepository round, {
   required List<int> votes,
   String? guess,
+  int extraClueLaps = 0,
 }) {
-  void act(void Function() action) {
-    action();
-    session.recordRound(round);
-  }
-
-  for (var i = 0; i < crew.length; i++) {
-    act(round.openPrivateView);
-    act(round.finishReveal);
-  }
-  for (var i = 0; i < crew.length; i++) {
-    act(round.finishClue);
+  final act = actor(session, round);
+  revealRoles(session, round);
+  clueLap(session, round);
+  for (var i = 0; i < extraClueLaps; i++) {
+    act(round.startAnotherClueRound);
+    clueLap(session, round);
   }
   act(round.startVoting);
   for (final suspect in votes) {
@@ -136,6 +162,62 @@ void main() {
     expect(round.view.chameleonName, 'Casey');
     expect(session.roundsPlayed, 0);
     expect(scores(session), {'Alex': 0, 'Blair': 0, 'Casey': 0, 'Drew': 0});
+  });
+
+  group('another clue round', () {
+    // The stand-in rule reads only the crew, so a round recorded early shows
+    // up as a wrong count rather than as a crash on a missing winner.
+    test('records nothing and moves no score until the round finishes', () {
+      session = GameSession(players: crew, rule: const _EveryoneScoresTen());
+      final round = newRound();
+      addTearDown(round.dispose);
+      final act = actor(session, round);
+      final zero = {for (final name in crew) name: 0};
+
+      revealRoles(session, round);
+      clueLap(session, round);
+      expect(round.view.phase, GamePhase.discussion);
+      expect(session.roundsPlayed, 0);
+
+      // Press "Another Round": back to clues, same roles, nothing scored.
+      act(round.startAnotherClueRound);
+      expect(round.view.phase, GamePhase.clues);
+      expect(round.view.turn, 0);
+      expect(session.roundsPlayed, 0);
+      expect(scores(session), zero);
+
+      clueLap(session, round);
+      act(round.startAnotherClueRound);
+      clueLap(session, round);
+      expect(round.view.phase, GamePhase.discussion);
+      expect(session.roundsPlayed, 0);
+      expect(scores(session), zero);
+
+      act(round.startVoting);
+      for (final suspect in tiedVote) {
+        act(round.openPrivateView);
+        act(() => round.castVote(suspect));
+      }
+
+      // Three clue laps, still one round, scored once.
+      expect(round.view.phase, GamePhase.result);
+      expect(session.roundsPlayed, 1);
+      expect(scores(session), {
+        'Alex': 10,
+        'Blair': 10,
+        'Casey': 10,
+        'Drew': 10,
+      });
+    });
+
+    test('a round with extra clue laps scores like any other', () {
+      final round = newRound();
+      addTearDown(round.dispose);
+      play(session, round, votes: tiedVote, extraClueLaps: 2);
+
+      expect(scores(session), {'Alex': 0, 'Blair': 0, 'Casey': 2, 'Drew': 0});
+      expect(session.roundsPlayed, 1);
+    });
   });
 
   test('offering the same finished round again does not count it twice', () {
