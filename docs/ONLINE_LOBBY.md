@@ -13,8 +13,9 @@ anonymous identity. The offline **Start a game** mode remains available.
    policies, server-owned game actions, and Realtime publication entries.
 3. In **Authentication → Sign In / Providers**, enable **Allow anonymous
    sign-ins** and save. This is needed for each device to have an identity.
-4. Run with `--dart-define-from-file=config/supabase.json` as described in
-   `docs/SUPABASE.md`. Include that setting in Android Studio and release builds.
+4. Run the team's project normally with `flutter run` or Android Studio. To use
+   a different Supabase project, override the public settings as described in
+   `docs/SUPABASE.md`.
 
 ## Play
 
