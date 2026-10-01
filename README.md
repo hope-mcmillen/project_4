@@ -18,7 +18,7 @@ Select an Android emulator, iOS simulator, or connected phone. iOS builds requir
 flutter run -d chrome
 ```
 
-The cloned project folder is `chameleon`. The Dart package is still named `project_4` to preserve the existing imports and platform identifiers. The visible app name on Android, iOS, and web is **Chameleon**.
+The cloned project folder is `chameleon`. The Dart package is still named `project_4` to preserve the existing imports. The Android application ID and the iOS/macOS bundle identifier are `io.github.hopemcmillen.chameleon`. The visible app name on Android, iOS, and web is **Chameleon**.
 
 ## What works now
 
@@ -84,7 +84,7 @@ flutter test
 flutter build web
 ```
 
-Tests cover role secrecy, all winning outcomes, validation, illegal transitions, min/max players, a complete UI round, replay, lifecycle hiding, leaving a round, and small-screen layouts. GitHub Actions runs formatting, analysis, tests, and a web build on pushes and pull requests.
+Tests cover role secrecy, all winning outcomes, validation, illegal transitions, min/max players, a complete UI round, replay, lifecycle hiding, leaving a round, and small-screen layouts. GitHub Actions (`.github/workflows/flutter.yml`) runs formatting, analysis, tests, a web build, and `flutter build apk --release` on every push and pull request, and keeps the APK as the run's `chameleon-apk` artifact. Pushing a `v*.*.*` tag also attaches the APK to a GitHub Release. The APK is signed with the Android debug key: it installs directly for demos, but is not store-ready.
 
 See [the team plan](docs/TEAM_PLAN.md) for a suggested four-person work split and [the architecture notes](docs/ARCHITECTURE.md) before extending game state.
 
