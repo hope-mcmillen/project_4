@@ -20,6 +20,8 @@ void main() {
     await tester.pumpWidget(const ChameleonApp());
     expect(find.text('chameleon'), findsOneWidget);
     expect(find.text('3–8 players'), findsOneWidget);
+    expect(find.text('Host online'), findsNothing);
+    expect(find.textContaining('Online play is not set up'), findsOneWidget);
     await tapText(tester, 'How to play');
     expect(find.text('Everyone knows.\nExcept one of you.'), findsOneWidget);
   });

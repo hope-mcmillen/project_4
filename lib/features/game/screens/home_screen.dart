@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../app/theme.dart';
 import '../../lobby/logic/room_repository.dart';
 import '../../lobby/screens/create_room_screen.dart';
 import '../../lobby/screens/join_room_screen.dart';
+import '../../lobby/screens/supabase_online_screen.dart';
 import '../data/local_word_repository.dart';
 import '../data/word_repository.dart';
 import '../widgets/game_widgets.dart';
@@ -12,11 +14,13 @@ import 'setup_screen.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
     super.key,
-    required this.rooms,
+    this.rooms,
+    this.onlineClient,
     this.wordRepository = const LocalWordRepository(),
   });
   final WordRepository wordRepository;
-  final RoomRepository rooms;
+  final RoomRepository? rooms;
+  final SupabaseClient? onlineClient;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -85,25 +89,43 @@ class HomeScreen extends StatelessWidget {
           label: const Text('Start a game'),
         ),
         const SizedBox(height: 12),
-        OutlinedButton.icon(
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => CreateRoomScreen(rooms: rooms),
+        if (onlineClient == null && rooms == null)
+          const InfoCard(
+            child: Text(
+              'Online play is not set up in this build. Ask your team for a connected version.',
             ),
           ),
-          icon: const Icon(Icons.wifi_tethering_rounded),
-          label: const Text('Host online'),
-        ),
-        const SizedBox(height: 12),
-        OutlinedButton.icon(
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => JoinRoomScreen(rooms: rooms),
+        if (onlineClient != null || rooms != null)
+          OutlinedButton.icon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => onlineClient == null
+                    ? CreateRoomScreen(rooms: rooms!)
+                    : SupabaseOnlineScreen(
+                        client: onlineClient!,
+                        joining: false,
+                      ),
+              ),
             ),
+            icon: const Icon(Icons.wifi_tethering_rounded),
+            label: const Text('Host online'),
           ),
-          icon: const Icon(Icons.login_rounded),
-          label: const Text('Join online'),
-        ),
+        if (onlineClient != null || rooms != null) const SizedBox(height: 12),
+        if (onlineClient != null || rooms != null)
+          OutlinedButton.icon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => onlineClient == null
+                    ? JoinRoomScreen(rooms: rooms!)
+                    : SupabaseOnlineScreen(
+                        client: onlineClient!,
+                        joining: true,
+                      ),
+              ),
+            ),
+            icon: const Icon(Icons.login_rounded),
+            label: const Text('Join online'),
+          ),
         const SizedBox(height: 12),
         OutlinedButton.icon(
           onPressed: () => Navigator.of(
