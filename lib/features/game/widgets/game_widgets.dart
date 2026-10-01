@@ -38,7 +38,7 @@ class Eyebrow extends StatelessWidget {
     child: Text(
       text.toUpperCase(),
       style: const TextStyle(
-        color: AppColors.purple,
+        color: AppColors.teal,
         fontSize: 12,
         fontWeight: FontWeight.w800,
         letterSpacing: 1.5,
@@ -48,7 +48,7 @@ class Eyebrow extends StatelessWidget {
 }
 
 class InfoCard extends StatelessWidget {
-  const InfoCard({super.key, required this.child, this.color = Colors.white});
+  const InfoCard({super.key, required this.child, this.color = AppColors.card});
   final Widget child;
   final Color color;
 
@@ -120,7 +120,7 @@ class TopicBoard extends StatelessWidget {
                                   vertical: 12,
                                 ),
                                 backgroundColor: selected == word
-                                    ? AppColors.lime
+                                    ? AppColors.sage
                                     : AppColors.paper,
                               ),
                               onPressed: () => onSelect!(word),
@@ -160,13 +160,13 @@ class _MascotPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     canvas.save();
     canvas.scale(size.width / 280, size.height / 165);
-    final green = Paint()..color = AppColors.lime;
+    final green = Paint()..color = AppColors.sage;
     final dark = Paint()..color = AppColors.ink;
     canvas.drawLine(
       const Offset(30, 142),
       const Offset(248, 142),
       Paint()
-        ..color = const Color(0xFF998DD0)
+        ..color = AppColors.mint
         ..strokeWidth = 4
         ..strokeCap = StrokeCap.round,
     );
@@ -184,7 +184,7 @@ class _MascotPainter extends CustomPainter {
     canvas.drawPath(
       tail,
       Paint()
-        ..color = AppColors.lime
+        ..color = AppColors.sage
         ..style = PaintingStyle.stroke
         ..strokeWidth = 14
         ..strokeCap = StrokeCap.round,
@@ -196,16 +196,24 @@ class _MascotPainter extends CustomPainter {
           ..lineTo(x - 9, 141)
           ..lineTo(x + 7, 141),
         Paint()
-          ..color = AppColors.lime
+          ..color = AppColors.sage
           ..style = PaintingStyle.stroke
           ..strokeWidth = 10
           ..strokeCap = StrokeCap.round
           ..strokeJoin = StrokeJoin.round,
       );
     }
-    canvas.drawCircle(const Offset(190, 81), 15, Paint()..color = Colors.white);
+    canvas.drawCircle(
+      const Offset(190, 81),
+      15,
+      Paint()..color = AppColors.card,
+    );
     canvas.drawCircle(const Offset(194, 80), 6, dark);
-    canvas.drawCircle(const Offset(196, 78), 2, Paint()..color = Colors.white);
+    canvas.drawCircle(
+      const Offset(196, 78),
+      2,
+      Paint()..color = AppColors.card,
+    );
     canvas.drawPath(
       Path()
         ..moveTo(201, 103)
@@ -221,7 +229,7 @@ class _MascotPainter extends CustomPainter {
       const Offset(140, 59),
       const Offset(157, 86),
     ]) {
-      canvas.drawCircle(spot, 8, Paint()..color = const Color(0xFFA5C958));
+      canvas.drawCircle(spot, 8, Paint()..color = AppColors.ink);
     }
     canvas.restore();
   }

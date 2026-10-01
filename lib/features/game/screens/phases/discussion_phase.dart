@@ -9,9 +9,11 @@ class DiscussionPhase extends StatelessWidget {
     super.key,
     required this.view,
     required this.onReadyToVote,
+    required this.onAnotherRound,
   });
   final PlayerView view;
   final VoidCallback onReadyToVote;
+  final VoidCallback onAnotherRound;
 
   @override
   Widget build(BuildContext context) => PageBody(
@@ -22,7 +24,7 @@ class DiscussionPhase extends StatelessWidget {
         style: Theme.of(context).textTheme.headlineMedium,
       ),
       const InfoCard(
-        color: AppColors.lime,
+        color: AppColors.sage,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -34,7 +36,7 @@ class DiscussionPhase extends StatelessWidget {
             ),
             SizedBox(height: 8),
             Text(
-              'Discuss as a group. When everyone is ready, pass the phone for one private vote each. A tie lets the Chameleon escape.',
+              'Discuss as a group. Need more clues? Play another round with the same roles and secret word. When everyone is ready, pass the phone for one private vote each. A tie lets the Chameleon escape.',
             ),
           ],
         ),
@@ -42,6 +44,11 @@ class DiscussionPhase extends StatelessWidget {
       FilledButton(
         onPressed: onReadyToVote,
         child: const Text('Ready to vote'),
+      ),
+      const SizedBox(height: 12),
+      OutlinedButton(
+        onPressed: onAnotherRound,
+        child: const Text('Another Round'),
       ),
       TopicBoard(topic: view.topic),
     ],

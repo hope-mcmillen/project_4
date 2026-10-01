@@ -221,8 +221,8 @@ class _SetupScreenState extends State<SetupScreen> {
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
                     backgroundColor: _topic?.id == topic.id
-                        ? AppColors.lime
-                        : Colors.white,
+                        ? AppColors.sage
+                        : AppColors.card,
                     padding: const EdgeInsets.all(18),
                   ),
                   onPressed: () => _previewTopic(topic),

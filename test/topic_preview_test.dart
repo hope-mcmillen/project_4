@@ -7,6 +7,7 @@ import 'package:project_4/features/game/data/topic_packs.dart';
 import 'package:project_4/features/game/data/word_repository.dart';
 import 'package:project_4/features/game/models/topic_pack.dart';
 import 'package:project_4/features/game/screens/setup_screen.dart';
+import 'package:project_4/features/game/screens/phases/clues_phase.dart';
 
 class TestWordRepository implements WordRepository {
   TestWordRepository(this.load);
@@ -67,8 +68,10 @@ void main() {
       await tapText(tester, 'Reveal my role');
       await tapText(tester, 'Hide & continue');
     }
-    expect(find.text('MUSIC ROOM'), findsOneWidget);
-    expect(find.text('Tambourine'), findsOneWidget);
+    final clues = tester.widget<CluesPhase>(find.byType(CluesPhase));
+    expect(clues.view.topic.name, 'Music room');
+    expect(clues.view.topic.words, contains('Tambourine'));
+    expect(find.text('View my clue screen'), findsOneWidget);
     expect(find.text('Pizza'), findsNothing);
   });
 
