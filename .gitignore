@@ -49,3 +49,8 @@ app.*.map.json
 
 # Local Supabase project configuration (public client credentials only).
 /config/supabase.json
+
+# Generated backend dependencies and emulator files.
+functions/node_modules/
+functions/lib/
+.firebase/
