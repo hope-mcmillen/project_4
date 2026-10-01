@@ -1,10 +1,9 @@
 # Supabase topic library (CHM-2)
 
 CHM-1's topic library and preview are complete. CHM-2 now implements the remote
-repository against the following CHM-S1 backend contract. The local browser
-preview has been verified against the team’s Supabase project. Connection
-settings are kept in the ignored local config file; teammates must configure
-their own checkout as described below.
+repository against the following CHM-S1 backend contract. The app includes the
+team project's public URL and publishable key, so a normal `flutter run` connects
+to Supabase. Other projects can override those public settings as below.
 
 ## Create the backend
 
@@ -26,8 +25,16 @@ Supabase dashboard. Topic lists are public; do not store player secrets here.
 
 ## Connect the app
 
-Copy `config/supabase.example.json` to `config/supabase.json` and replace both
-placeholders. That local file is ignored by Git. From the project root:
+For this team's project, run or build normally:
+
+```sh
+flutter run
+flutter build apk
+```
+
+To use another Supabase project, copy `config/supabase.example.json` to
+`config/supabase.json` and replace both placeholders. That local file is ignored
+by Git. Then run or build with the override:
 
 ```sh
 flutter run --dart-define-from-file=config/supabase.json
@@ -35,13 +42,12 @@ flutter build apk --dart-define-from-file=config/supabase.json
 flutter build web --dart-define-from-file=config/supabase.json
 ```
 
-In Android Studio, put `--dart-define-from-file=config/supabase.json` in the Flutter
-run configuration's **Additional run args**. These are build-time settings: each
-release/CI build must supply them too. Without either setting the app intentionally
-uses the bundled local repository. A partial or invalid configuration fails with
-an actionable error rather than silently shipping an unconnected release.
-The publishable key is expected to be in the app binary; access control comes from
-RLS and grants, not hiding this key.
+In Android Studio, the team project works with a normal Flutter run. For a
+different project, put `--dart-define-from-file=config/supabase.json` in the
+Flutter run configuration's **Additional run args** and use the same override
+for release/CI builds. Both overrides must be supplied together. The publishable
+key is expected to be in the app binary; access control comes from RLS and
+grants, not hiding this key.
 
 ## Add or edit topics without an app release
 
