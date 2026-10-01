@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../features/game/data/word_repository.dart';
 import '../features/game/screens/home_screen.dart';
@@ -8,12 +9,18 @@ import 'theme.dart';
 import 'word_repository_config.dart';
 
 class ChameleonApp extends StatefulWidget {
-  const ChameleonApp({super.key, this.wordRepository, this.rooms});
+  const ChameleonApp({
+    super.key,
+    this.wordRepository,
+    this.rooms,
+    this.onlineClient,
+  });
   final WordRepository? wordRepository;
 
   /// The online room backend. Defaults to an in-memory fake until CHM-S1
   /// picks a real one; tests can pass their own.
   final RoomRepository? rooms;
+  final SupabaseClient? onlineClient;
 
   @override
   State<ChameleonApp> createState() => _ChameleonAppState();
@@ -40,6 +47,10 @@ class _ChameleonAppState extends State<ChameleonApp> {
     title: 'Chameleon',
     debugShowCheckedModeBanner: false,
     theme: buildTheme(),
-    home: HomeScreen(wordRepository: _words, rooms: _rooms),
+    home: HomeScreen(
+      wordRepository: _words,
+      rooms: _rooms,
+      onlineClient: widget.onlineClient,
+    ),
   );
 }

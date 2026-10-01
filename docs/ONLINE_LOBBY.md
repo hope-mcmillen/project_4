@@ -1,97 +1,41 @@
-# Online lobbies (stage 1)
+# Supabase online play
 
-From Home, choose **Play online**. Players sign in anonymously, create a code or
-join one, and see the same player list. Each player can change their readiness;
-only the host can change the topic. Changing the topic resets all ready flags.
-There must be at least three players, all ready, to show “Everyone is ready”.
-Online role assignment and rounds are stage 2; the lobby does not start an offline
-round independently on each phone. **Start a game** still opens offline play.
+Online play uses the same Supabase project as the topic library. Each player
+needs a separate phone or browser profile; tabs in one browser profile share an
+anonymous identity. The offline **Start a game** mode remains available.
 
-## Firebase services required
+## Set up the backend
 
-The Flutter configuration targets `chameleongame-2214d`. Configuration alone does
-not enable its backend services. In the Firebase console:
+1. Apply `supabase/migrations/202609290001_topic_packs.sql` and
+   `supabase/seed.sql` if the topic library has not already been installed.
+2. Apply `supabase/migrations/202610010001_online_game.sql` in the Supabase SQL
+   Editor. It creates rooms, members, private words and votes, member-only read
+   policies, server-owned game actions, and Realtime publication entries.
+3. In **Authentication → Sign In / Providers**, enable **Allow anonymous
+   sign-ins** and save. This is needed for each device to have an identity.
+4. Run with `--dart-define-from-file=config/supabase.json` as described in
+   `docs/SUPABASE.md`. Include that setting in Android Studio and release builds.
 
-1. Enable **Authentication → Sign-in method → Anonymous**.
-2. Create the default **Cloud Firestore** database in production mode. For this
-   setup, `us-central1` keeps it near the callable functions.
-3. Cloud Functions deployment requires the **Blaze** plan and a linked billing
-   account. Set this up yourself if you want the hosted backend; the local emulator
-   flow below does not require a billing account.
+## Play
 
-Use Node.js 22 for the backend. From the project root:
+The host picks a live published topic and creates a room. Other players enter
+the six-character code. Three to eight players ready up, and the host starts.
+Each player privately reveals their role; the server gives the same secret word
+to everyone except the Chameleon. Players submit one clue in turn, discuss,
+then vote privately. A tied or wrong accusation lets the Chameleon win. If the
+group finds the Chameleon, that player guesses one word from the topic board.
 
-```powershell
-npm.cmd --prefix functions ci
-npx.cmd --yes firebase-tools deploy --only "functions:lobby,firestore:rules" --project chameleongame-2214d
-flutter run -d chrome
-```
-
-The deployment pre-step compiles the TypeScript. Authentication must be enabled
-separately. Test players should use separate phones or separate browser profiles
-(normal and private windows also work); tabs in one profile share an identity.
-Android release builds include the Internet permission. Start with Android or web;
-native desktop Firebase plugin support differs by platform.
-
-## Run entirely locally
-
-Install Node.js 22 and Java 21 or newer, then from the project root:
-
-```powershell
-npm.cmd --prefix functions ci
-npm.cmd --prefix functions run build
-npx.cmd --yes firebase-tools emulators:start --project demo-chameleon --only auth,firestore,functions
-```
-
-In a second terminal:
-
-```powershell
-flutter run -d chrome --dart-define=FIREBASE_EMULATOR_HOST=127.0.0.1
-```
-
-The define selects the isolated `demo-chameleon` project as well as the local
-endpoints. Never supply it for the hosted project. Android emulator clients use
-`10.0.2.2` instead of `127.0.0.1`. Emulator state is temporary by default.
+Room and player updates use Supabase Realtime, with a five-second refresh if a
+socket drops. Room writes go through SQL functions; direct client writes and
+reads of private words and votes are denied. A room expires after six hours.
+The app currently plays one round per code; create a new room for another round.
+Players who close the app mid-round keep their seat but the round may wait for
+them to return. There is no automatic timeout or host takeover mid-round yet.
 
 ## Validation
 
-```powershell
-flutter analyze
-flutter test
-flutter build web
-npx.cmd --yes firebase-tools emulators:exec --project demo-chameleon --only auth,firestore,functions "npm --prefix functions test"
-```
-
-The backend integration test covers authenticated callables, duplicate names,
-idempotent create/join, readiness, host-only topic changes, concurrent joins at the
-eight-player limit, host transfer, empty-room closure, expiry, and Firestore rules.
-It clears only the demo emulator database. Flutter tests cover lobby creation,
-join failure/retry, live updates, readiness, host controls, cached state, seat
-restoration, leaving, and small screens, alongside the offline game tests.
-
-## Design and current boundaries
-
-- `RoomRepository` separates lobby UI from Firebase. `FirebaseRoomRepository`
-  initializes Firebase on entering online mode, signs in, and restores an active
-  room. The offline app does not depend on Firebase startup.
-- Functions run in `us-central1`. Authentication identifies the caller; clients
-  cannot supply another player's identity. All changes run through the functions.
-- Members can read their shared `rooms/{id}` document. No client can list rooms,
-  write room documents, or read code lookups or membership mappings.
-- `roomCodes/{code}` maps six-character codes to room IDs. `lobbyMembers/{uid}`
-  enforces one active lobby per identity and makes create retries safe.
-- Transactions reserve codes, enforce capacity and unique names, and transfer host
-  ownership to the earliest remaining member when the host explicitly leaves.
-- Rooms expire after six hours. Expiry is enforced on reads and actions; expired
-  records are not automatically deleted yet. Codes may be reused after expiry.
-- Closing the app keeps the seat; choosing Play online restores it under the same
-  anonymous identity. Clearing app/browser data loses that identity.
-- Ready means the player has tapped Ready, not that they are currently connected.
-  Disconnect presence, automatic host transfer on disconnect, kicking absent
-  players, and scheduled cleanup remain later work. Explicit Leave transfers host.
-- The client shows cached lobby data as connecting and disables readiness/topic
-  changes until a server snapshot arrives. Server errors support retry.
-- No roles, ballots or secret words are stored in stage 1. Add private per-player
-  data and server-owned round rules in stage 2; never put secrets in the shared room.
-- Before public distribution, add App Check enforcement and request throttling.
-  This initial backend is for small-group development and testing.
+Run `flutter analyze` and `flutter test`. Verify a real hosted round with at
+least three independent devices or browser profiles. Check that a nonmember
+cannot read room data, a Chameleon cannot fetch the secret word, and a player
+cannot vote twice. The older Firebase lobby prototype remains in the tree for
+reference but is not used by the configured Host/Join buttons.
